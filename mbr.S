@@ -37,7 +37,7 @@ SECTION MBR vstart=0x7c00
 
 	mov ax,06_00h
 	mov bx,07_00h
-	mov cx,00_00
+	mov cx,00_00h
 	mov dx,18_4fh		; 0x18 = 25, 0x4f = 80 
 					; in VGA text mode, only 80*25 characters
 	int 10h
@@ -76,8 +76,8 @@ SECTION MBR vstart=0x7c00
 
 	jmp LOADER_BASE_ADDR
 
-%include "func.S"
+%include "mbr_func.S"
 
 ;------------------------------------------------------------
 	times 	510-($-$$)	db	0
-	db	0x55,0xaa
+						db	0x55,0xaa	
