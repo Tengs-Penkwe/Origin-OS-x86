@@ -25,7 +25,7 @@ loader: MBR
 
 kernel: loader
 	@dd if=$(MBR).bin     of=$(IMAGE) bs=512 count=1 seek=0 conv=notrunc
-	@dd if=$(LOADER).bin  of=$(IMAGE) bs=512 count=1 seek=1 conv=notrunc
+	@dd if=$(LOADER).bin  of=$(IMAGE) bs=512 count=4 seek=1 conv=notrunc
 
 preprocess: kernel
 	$(ASM) $(LDFLAGS)  -E $(MBR).S -o $(MBR).xpd
