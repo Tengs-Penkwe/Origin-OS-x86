@@ -14,8 +14,7 @@ vgaromimage: file=/opt/homebrew/share/bochs/VGABIOS-lgpl-latest
 
 # 第四步,选择启动盘符。 
 #boot: floppy #默认从软盘启动,将其注释 
-boot: disk 
-#改为从硬盘启动。我们的任何代码都将直接写在硬盘上,所以不会再有读写软盘的操作。 
+boot: disk  #改为从硬盘启动。我们的任何代码都将直接写在硬盘上,所以不会再有读写软盘的操作。 
 
  # 第五步,设置日志文件的输出。 
 log: bochs.out  
