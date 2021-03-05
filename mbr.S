@@ -42,7 +42,6 @@ SECTION MBR vstart=0x7c00
 					; in VGA text mode, only 80*25 characters
 	int 10h
 ;------------------------------------------------------------
-;------------------------------------------------------------
 
 	; 输出字符串:MBR
 	mov byte [gs:0x00],'1'
@@ -59,17 +58,26 @@ SECTION MBR vstart=0x7c00
 
 	mov byte [gs:0x08],'R'
 	mov byte [gs:0x09],0xA4
+;------------------------------------------------------------
+;load loader code from disk to memory
+;use _read_n_disk() in func.S
+;------------------------------------------------------------
+;EAX	= LBA sector
+;DS:BX	= Memory Address to Write
+;CX		= Sectors to Read
+;No Return Value
 
 	mov eax,LOADER_START_SECTOR
 		mov bx,0
 	mov ds,bx
 	mov bx,LOADER_BASE_ADDR
-	mov cx,1
+	mov cx,4
 	call _read_n_disk
 
 	jmp LOADER_BASE_ADDR
 
 %include "func.S"
 
+;------------------------------------------------------------
 	times 	510-($-$$)	db	0
 	db	0x55,0xaa
