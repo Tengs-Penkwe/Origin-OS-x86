@@ -5,8 +5,8 @@ megs: 32
 # 第二步,设置对应真实机器的 BIOS 和 VGA BIOS。 
 # 对应两个关键字为:romimage 和 vgaromimage  
 
-romimage: file=/usr/local/share/bochs/BIOS-bochs-latest 
-vgaromimage: file=/usr/local/share/bochs/VGABIOS-lgpl-latest  
+romimage: file=/opt/homebrew/share/bochs/BIOS-bochs-latest 
+vgaromimage: file=/opt/homebrew/share/bochs/VGABIOS-lgpl-latest  
 
 # 第三步,设置 Bochs 所使用的磁盘,软盘的关键字为 floppy。 
 # 若只有一个软盘,则使用 floppya 即可,若有多个,则为 floppya,floppyb… 
@@ -23,7 +23,7 @@ log: bochs.out
 # 下面是关闭鼠标,并打开键盘。 
 mouse: enabled=0 
 keyboard: type=mf
-#keymap=/usr/local/share/bochs/keymaps/x11-pc-us.map  
+#keymap=/opt/homebrew/share/bochs/keymaps/x11-pc-us.map  
 
 # 硬盘设置 
 ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14  

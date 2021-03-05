@@ -1,31 +1,38 @@
-TARGET		:=	mbr
-BIN_FILE	:=	$(TARGET).bin
+MBR			:=	mbr
+LOADER		:=	loader
 IMAGE		:=	hd32Mi.img
 
-ASM			:= nasm
-ASMFLAGS	:= -f elf
+ASM			:=	nasm
+ASMFLAGS	:=	-f elf
+LDFLAGS		:=	-I include/
 
-CC			:= gcc
+CC			:=	gcc
 CFLAGS		:=
 
-LINK		:= ld
-LDFLAGS		:= -m elf_i386
+LINK		:=	ld
+LFLAGS		:=	-m elf_i386
 
 DEPS		:=
 
 OBJS		:= 
 
-.PHONY :build MBR clean run debug
-build:
-	$(ASM) $(TARGET).S -o $(BIN_FILE)
-MBR: build
-	@dd if=$(BIN_FILE) of=$(IMAGE) bs=512 count=1 conv=notrunc
+.PHONY :MBR loader kernel preprocess run clean 
+MBR:
+	$(ASM) $(LDFLAGS) $(MBR).S -o $(MBR).bin 
 
-run: build MBR 
+loader: MBR
+	$(ASM) $(LDFLAGS) $(LOADER).S -o $(LOADER).bin 
+
+kernel: loader
+	@dd if=$(MBR).bin     of=$(IMAGE) bs=512 count=1 seek=0 conv=notrunc
+	@dd if=$(LOADER).bin  of=$(IMAGE) bs=512 count=1 seek=1 conv=notrunc
+
+preprocess: kernel
+	$(ASM) $(LDFLAGS)  -E $(MBR).S -o $(MBR).xpd
+	@cat -n $(MBR).xpd
+
+run: kernel 
 	@bochs -f bochsrc.mac
 
-debug:
-	@bochs
-
 clean:
-	@rm -rf *.o
+	@rm -rf *.o *.xpd *.bin *.out

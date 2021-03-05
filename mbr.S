@@ -1,61 +1,75 @@
+%include "boot.inc"
+;extern _read_n_disk
+
 ;主引导程序 
 ;------------------------------------------------------------
-SECTION MBR vstart=0x7c00         
-   mov ax,cs      
-   mov ds,ax
-   mov es,ax
-   mov ss,ax
-   mov fs,ax
-   mov sp,0x7c00
+SECTION MBR vstart=0x7c00
 
-; 清屏 利用0x06号功能，上卷全部行，则可清屏。
-; -----------------------------------------------------------
+	;Copy CS to ES,FS 
+	;cs points to 0x7c00(MBR)
+		mov ax,cs
+	mov es,ax
+	mov fs,ax
+	
+	;Set Stack
+	;SS:0x9000 -> SP:0xfbff
+	;The Highest Usable Space
+		mov ax,0x9000
+	mov ss,ax
+	mov sp,0xfbff
+
+	;Prepare to Output Character
+		mov ax,0xb800		;text mode display
+	mov gs,ax
+
+;------------------------------------------------------------
+;Clear Screen
+;use 0x10 -> 0x06 interrupt
+;-----------------------------------------------------------
 ;INT 0x10   功能号:0x06	   功能描述:上卷窗口
 ;------------------------------------------------------
-;输入：
 ;AH 功能号= 0x06
 ;AL = 上卷的行数(如果为0,表示全部)
 ;BH = 上卷行属性
 ;(CL,CH) = 窗口左上角的(X,Y)位置
 ;(DL,DH) = 窗口右下角的(X,Y)位置
 ;无返回值：
-   mov     ax, 0x600
-   mov     bx, 0x700
-   mov     cx, 0           ; 左上角: (0, 0)
-   mov     dx, 0x184f	   ; 右下角: (80,25),
-			   ; VGA文本模式中,一行只能容纳80个字符,共25行。
-			   ; 下标从0开始,所以0x18=24,0x4f=79
-   int     0x10            ; int 0x10
 
-;;;;;;;;;    下面这三行代码是获取光标位置    ;;;;;;;;;
-;.get_cursor获取当前光标位置,在光标位置处打印字符.
-   mov ah, 3		; 输入: 3号子功能是获取光标位置,需要存入ah寄存器
-   mov bh, 0		; bh寄存器存储的是待获取光标的页号
+	mov ax,06_00h
+	mov bx,07_00h
+	mov cx,00_00
+	mov dx,18_4fh		; 0x18 = 25, 0x4f = 80 
+					; in VGA text mode, only 80*25 characters
+	int 10h
+;------------------------------------------------------------
+;------------------------------------------------------------
 
-   int 0x10		; 输出: ch=光标开始行,cl=光标结束行
-			; dh=光标所在行号,dl=光标所在列号
+	; 输出字符串:MBR
+	mov byte [gs:0x00],'1'
+	mov byte [gs:0x01],0xA4
 
-;;;;;;;;;    获取光标位置结束    ;;;;;;;;;;;;;;;;
+	mov byte [gs:0x02],' '
+	mov byte [gs:0x03],0xA4
 
-;;;;;;;;;     打印字符串    ;;;;;;;;;;;
-   ;还是用10h中断,不过这次是调用13号子功能打印字符串
-   mov ax, message 
-   mov bp, ax		; es:bp 为串首地址, es此时同cs一致，
-			; 开头时已经为sreg初始化
+	mov byte [gs:0x04],'M'
+	mov byte [gs:0x05],0xA4	   ;A表示绿色背景闪烁，4表示前景色为红色
 
-   ; 光标位置要用到dx寄存器中内容,cx中的光标位置可忽略
-   mov cx, 5		; cx 为串长度,不包括结束符0的字符个数
-   mov ax, 0x1301	; 子功能号13是显示字符及属性,要存入ah寄存器,
-			; al设置写字符方式 ah=01: 显示字符串,光标跟随移动
-   mov bx, 0xA4		; bh存储要显示的页号,此处是第0页,
-			; bl中是字符属性, 属性黑底绿字(bl = 02h)
-   int 0x10		; 执行BIOS 0x10 号中断
-;;;;;;;;;      打字字符串结束	 ;;;;;;;;;;;;;;;
+	mov byte [gs:0x06],'B'
+	mov byte [gs:0x07],0xA4
 
-   jmp $		; 使程序悬停在此
+	mov byte [gs:0x08],'R'
+	mov byte [gs:0x09],0xA4
 
-   message db "1 MBR"
-   times 510-($-$$) db 0
-   db 0x55,0xaa
+	mov eax,LOADER_START_SECTOR
+		mov bx,0
+	mov ds,bx
+	mov bx,LOADER_BASE_ADDR
+	mov cx,1
+	call _read_n_disk
 
+	jmp LOADER_BASE_ADDR
 
+%include "func.S"
+
+	times 	510-($-$$)	db	0
+	db	0x55,0xaa
