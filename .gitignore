@@ -1,6 +1,7 @@
-*.gch
 .DS_Store
+*.gch
 *.swp
 *.o
 a.out
 *.img
+*.bin
