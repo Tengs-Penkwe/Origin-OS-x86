@@ -215,7 +215,7 @@ mem_cpy:
 		rep movsb
 
 		pop ecx
-		pop ebx
+		pop ebp
 ret
 ;------------------------------------------------------------
 
@@ -224,16 +224,15 @@ ret
 ;copy kernel to the right place
 ;kernel is load in KERNEL_BIN_BASE_ADDR as ELF file
 ;load the segment to right place
+kernel_init:
 ;------------------------------------------------------------
 ;ebx = Address of Program Header
 ;ecx = Number of Program Header		;
 ;edx = Size of Program Header		;e_phentsize
-
-
-
-kernel_init:
 		
 			xor edx,edx
+			xor ecx,ecx
+
 		mov dx, [KERNEL_BIN_BASE_ADDR + 42]		;e_phentsize, the size of program header
 
 			mov ebx, [KERNEL_BIN_BASE_ADDR + 28];e_phoff, the offset of first PH
@@ -261,6 +260,7 @@ kernel_init:
 	.PTNULL:
 		;point to next PH
 		add	ebx, edx						;size of PH
+
 	loop .each_segment
 
 ret 
