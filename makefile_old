@@ -6,7 +6,7 @@ SOURCE_DIRS		=	$(SOURCE_ROOT)/kernel/	\
 OBJ_DIR			=	$(SOURCE_ROOT)/obj/
 
 SRCS			=	$(shell find $(SOURCE_DIRS) -name '*.c' -o -name '*.S')
-OBJS 			=	$(patsubst %,$(OBJ_DIR)%.o,$(SRCS))
+OBJS 			=	$(patsubst %,$(OBJ_DIR)/%.o,$(SRCS))
 DEPS			=	$(OBJS:.o=.d)
 
 INC_DIRS		=	$(shell find $(SOURCE_DIRS) -type d)
@@ -16,10 +16,8 @@ CPPFLAGS		=	$(INC_FLAGS) -MD -MP
 
 ASM				=	nasm
 ASMFLAGS		=	-f elf
-
 CC				=	x86_64-elf-gcc
 CFLAGS			=	-m32 -z nognustack
-
 LD				=	x86_64-elf-ld
 LDFLAGS			=	-Ttext 0xc0001500 -m elf_i386 -e main -z stack-size=0  
 
@@ -27,13 +25,15 @@ TARGET_KERNEL	=	kernel.bin
 IMAGE			=	hd32Mi.img
 
 $(SOURCE_ROOT)/$(TARGET_KERNEL): $(OBJS)
-	$(LD) $(addprefix $(OBJ_DIR),$(notdir $(OBJS))) -o $@ $(LDFLAGS)
+	$(LD) $(OBJS) -o $@ $(LDFLAGS)
 
-$(OBJ_DIR)%.c.o: %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $(addprefix $(OBJ_DIR),$(notdir $@))
+$(OBJ_DIR)/%.c.o: %.c
+	mkdir -p $(addprefix $(OBJ_DIR),$(notdir $@))
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@ 
 
-$(OBJ_DIR)%.S.o: %.S
-	$(ASM) $(CPPFLAGS) $(ASMFLAGS) $< -o $(addprefix $(OBJ_DIR),$(notdir $@)) 
+$(OBJ_DIR)/%.S.o: %.S
+	mkdir -p $(addprefix $(OBJ_DIR),$(notdir $@))
+	$(ASM) $(CPPFLAGS) $(ASMFLAGS) $< -o $@ 
 
 boot:
 	make boot -C boot/
@@ -61,6 +61,6 @@ clean:
 	do \
 		make clean -C $$dir; \
 	done
-	rm -rf *.o $(OBJ_DIR)/* $(TARGET_KERNEL)
+	rm -rf $(OBJ_DIR) $(TARGET_KERNEL)
 
-#-include $(DEPS)
+-include $(DEPS)

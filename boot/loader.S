@@ -88,7 +88,6 @@ p_mode_start:
 		mov ax,SELECTOR_VIDEO
 	mov gs,ax
 
-	mov byte [gs:160],'P'
 ;------------------------------------------------------------
 ;load kernel
 ;------------------------------------------------------------
@@ -97,7 +96,6 @@ p_mode_start:
 		mov ecx,20
 	call _read_n_disk_32
 
-	mov byte [gs:160],'L'
 ;------------------------------------------------------------
 ;Initialize Page Directory and Tables
 ;------------------------------------------------------------
@@ -133,7 +131,7 @@ enter_kernel:
 	mov byte [gs:160],'E'
 
 	call kernel_init
-	mov byte [gs:160],'K'
+	mov byte [gs:162],'K'
 	mov esp, KERNEL_STACK_TOP
 	jmp KERNEL_ENTRY_POINT
 
