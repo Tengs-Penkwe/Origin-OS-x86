@@ -13,5 +13,8 @@ int main(void)
 	put_char('\b');
 	put_char('3');
 
+	put_str("I'm ready to go!");
+
+	put_int(2290618641);
 	while(1);
 }

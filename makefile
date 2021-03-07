@@ -38,20 +38,16 @@ $(OBJ_DIR)%.S.o: %.S
 boot:
 	make boot -C boot/
 
-lib:
-	make lib -C lib/
+.PHONY:  image disas run clean
 
-kernel: 
-	make kernel -C kernel/
-
-.PHONY:  image run clean
-
-image: $(SOURCE_ROOT)/$(TARGET_KERNEL) boot lib kernel
+image: $(SOURCE_ROOT)/$(TARGET_KERNEL) boot
 #	if ! [ -e hd32Mi.img ]; then \
 		bximage -hd=32M  -mode="create" -q hd32Mi.img \
 	fi
 	make image -C boot/
 	dd if=$(TARGET_KERNEL) of=$(IMAGE) bs=512 count=200 seek=9 conv=notrunc
+
+disas:
 
 run: boot image
 	bochs -qf $(SOURCE_ROOT)/bochsrc.mac
