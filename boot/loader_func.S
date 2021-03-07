@@ -212,9 +212,7 @@ mem_cpy:
 		mov edi, [ebp + 8]		;dest
 		mov esi, [ebp + 12]		;src
 		mov ecx, [ebp + 16] 	;size
-mov byte [gs:160],'9'
 		rep movsb
-mov byte [gs:160],'0'
 
 		pop ecx
 		pop ebx
@@ -246,10 +244,8 @@ kernel_init:
 	.each_segment:
 		; =0 indicates the PH is not used
 		cmp byte [ebx + 0],PT_NULL		
-mov byte [gs:160],'1'
 	je .PTNULL
 
-mov byte [gs:160],'2'
 		;size 
 		push dword [ebx + 16]		;p_filesz ; size of this PH				
 		;src
@@ -258,12 +254,10 @@ mov byte [gs:160],'2'
 		push eax
 		;dest
 		push dword [ebx + 8]
-mov byte [gs:160],'3'
 	
 	call mem_cpy
 			add esp,12
 
-mov byte [gs:160],'4'
 	.PTNULL:
 		;point to next PH
 		add	ebx, edx						;size of PH

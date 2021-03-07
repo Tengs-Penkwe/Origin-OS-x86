@@ -1,4 +1,6 @@
-int main(void){
+#include "print.h"
+int main(void)
+{
 	put_char('k');
 	put_char('e');
 	put_char('r');
