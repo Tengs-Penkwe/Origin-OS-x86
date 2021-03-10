@@ -1,0 +1,172 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+ASM	boot/makefile	/^ASM			:=	nasm$/;"	m
+ASM	lib/makefile	/^ASM			:=	nasm$/;"	m
+ASM	makefile	/^ASM				=	nasm$/;"	m
+ASMFLAGS	boot/makefile	/^ASMFLAGS	:=	-f elf$/;"	m
+ASMFLAGS	lib/makefile	/^ASMFLAGS	:=	-f elf$/;"	m
+ASMFLAGS	makefile	/^ASMFLAGS		=	-f elf$/;"	m
+BUILD_ROOT	boot/makefile	/^BUILD_ROOT	:=	$(CURRENT_DIR)\/..\/$/;"	m
+BUILD_ROOT	kernel/makefile	/^BUILD_ROOT	:=	$(CURRENT_DIR)\/..\/$/;"	m
+BUILD_ROOT	lib/makefile	/^BUILD_ROOT	:=	$(CURRENT_DIR)\/..\/$/;"	m
+CC	kernel/makefile	/^CC			:=	x86_64-elf-gcc$/;"	m
+CC	lib/makefile	/^CC			:=	x86_64-elf-gcc$/;"	m
+CC	makefile	/^CC				=	x86_64-elf-gcc$/;"	m
+CFLAGS	kernel/makefile	/^CFLAGS		:=	-m32 -z nognustack$/;"	m
+CFLAGS	lib/makefile	/^CFLAGS		:=	-m32 -z nognustack$/;"	m
+CFLAGS	makefile	/^CFLAGS			=	-m32 -z nognustack$/;"	m
+CODE_DESC	boot/loader.S	/^	CODE_DESC:		dd	0x0000_FFFF$/;"	d
+CPPFLAGS	makefile	/^CPPFLAGS		=	$(INC_FLAGS) -MD -MP$/;"	m
+CURRENT_DIR	boot/makefile	/^CURRENT_DIR	:=	$(shell pwd)$/;"	m
+CURRENT_DIR	kernel/makefile	/^CURRENT_DIR	:=	$(shell pwd)$/;"	m
+CURRENT_DIR	lib/makefile	/^CURRENT_DIR	:=	$(shell pwd)$/;"	m
+DATA_STACK_DESC	boot/loader.S	/^   DATA_STACK_DESC:	dd	0x0000_FFFF$/;"	d
+DEPS	makefile	/^DEPS			=	$(OBJS:.o=.d)$/;"	m
+GDT_BASE	boot/loader.S	/^	GDT_BASE:		dd	0x0000_0000$/;"	d
+GDT_LIMIT	boot/loader.S	/^	GDT_LIMIT		equ	GDT_SIZE-1$/;"	d
+GDT_SIZE	boot/loader.S	/^	GDT_SIZE		equ	$-GDT_BASE$/;"	d
+IDT_DESC_16_TYPE	kernel/global.h	/^#define	 IDT_DESC_16_TYPE /;"	d
+IDT_DESC_32_TYPE	kernel/global.h	/^#define	 IDT_DESC_32_TYPE /;"	d
+IDT_DESC_ATTR_DPL0	kernel/global.h	/^#define	 IDT_DESC_ATTR_DPL0 /;"	d
+IDT_DESC_ATTR_DPL3	kernel/global.h	/^#define	 IDT_DESC_ATTR_DPL3 /;"	d
+IDT_DESC_CNT	kernel/interrupt.c	/^#define IDT_DESC_CNT	/;"	d	file:
+IDT_DESC_DPL0	kernel/global.h	/^#define	 IDT_DESC_DPL0	/;"	d
+IDT_DESC_DPL3	kernel/global.h	/^#define	 IDT_DESC_DPL3	/;"	d
+IDT_DESC_P	kernel/global.h	/^#define	 IDT_DESC_P	/;"	d
+IMAGE	boot/makefile	/^IMAGE		:=	$(BUILD_ROOT)\/hd32Mi.img$/;"	m
+IMAGE	kernel/makefile	/^IMAGE		:=	$(BUILD_ROOT)\/hd32Mi.img$/;"	m
+IMAGE	lib/makefile	/^IMAGE		:=	$(BUILD_ROOT)\/hd32Mi.img$/;"	m
+IMAGE	makefile	/^IMAGE			=	hd32Mi.img$/;"	m
+INC_DIRS	makefile	/^INC_DIRS		=	$(shell find $(SOURCE_DIRS) -type d)$/;"	m
+INC_FLAGS	makefile	/^INC_FLAGS		=	$(addprefix -I,$(INC_DIRS))$/;"	m
+LBB0_1	kernel/main.s	/^LBB0_1:                                 ## =>This Inner Loop Header: Depth=1$/;"	l
+LD	makefile	/^LD				=	x86_64-elf-ld$/;"	m
+LDFLAGS	boot/makefile	/^LDFLAGS		:=	-I include\/$/;"	m
+LDFLAGS	lib/makefile	/^LDFLAGS		:=	-I include\/$/;"	m
+LDFLAGS	makefile	/^LDFLAGS			=	-Ttext 0xc0001500 -m elf_i386 -e main -z stack-size=0  $/;"	m
+LOADER	boot/makefile	/^LOADER		:=	loader$/;"	m
+LUT	lib/kernel/print.S	/^		LUT		db "0","1","2","3","4","5","6","7" $/;"	d
+MBR	boot/makefile	/^MBR			:=	mbr$/;"	m
+OBJS	makefile	/^OBJS 			=	$(patsubst %,$(OBJ_DIR)%.o,$(SRCS))$/;"	m
+OBJ_DIR	makefile	/^OBJ_DIR			=	$(SOURCE_ROOT)\/obj\/$/;"	m
+RPL0	kernel/global.h	/^#define	 RPL0 /;"	d
+RPL1	kernel/global.h	/^#define	 RPL1 /;"	d
+RPL2	kernel/global.h	/^#define	 RPL2 /;"	d
+RPL3	kernel/global.h	/^#define	 RPL3 /;"	d
+SECTION	boot/loader.S	/^SECTION loader vstart=LOADER_BASE_ADDR$/;"	l
+SECTION	boot/mbr.S	/^SECTION MBR vstart=0x7c00$/;"	l
+SECTION	kernel/kernel.S	/^SECTION .data$/;"	l
+SECTION	kernel/kernel.S	/^SECTION .text$/;"	l
+SELECTOR_CODE	boot/loader.S	/^	SELECTOR_CODE	equ	(0x0001<<3) + TI_GDT + RPL0$/;"	d
+SELECTOR_DATA	boot/loader.S	/^	SELECTOR_DATA	equ	(0x0002<<3) + TI_GDT + RPL0$/;"	d
+SELECTOR_K_CODE	kernel/global.h	/^#define SELECTOR_K_CODE	/;"	d
+SELECTOR_K_DATA	kernel/global.h	/^#define SELECTOR_K_DATA	/;"	d
+SELECTOR_K_GS	kernel/global.h	/^#define SELECTOR_K_GS	/;"	d
+SELECTOR_K_STACK	kernel/global.h	/^#define SELECTOR_K_STACK /;"	d
+SELECTOR_VIDEO	boot/loader.S	/^	SELECTOR_VIDEO	equ	(0x0003<<3) + TI_GDT + RPL0$/;"	d
+SOURCE_DIRS	makefile	/^SOURCE_DIRS		=	$(SOURCE_ROOT)\/kernel\/	\\$/;"	m
+SOURCE_ROOT	makefile	/^SOURCE_ROOT		= 	.$/;"	m
+SRCS	makefile	/^SRCS			=	$(shell find $(SOURCE_DIRS) -name '*.c' -o -name '*.S')$/;"	m
+TARGET	lib/makefile	/^TARGET		:=	lib$/;"	m
+TARGET_KERNEL	makefile	/^TARGET_KERNEL	=	kernel.bin$/;"	m
+TI_GDT	kernel/global.h	/^#define TI_GDT /;"	d
+TI_LDT	kernel/global.h	/^#define TI_LDT /;"	d
+VECTOR	kernel/kernel.S	/^VECTOR 0x00,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x01,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x02,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x03,ZERO $/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x04,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x05,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x06,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x07,ZERO $/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x08,ERROR_CODE$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x09,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x0a,ERROR_CODE$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x0b,ERROR_CODE $/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x0c,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x0d,ERROR_CODE$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x0e,ERROR_CODE$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x0f,ZERO $/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x10,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x11,ERROR_CODE$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x12,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x13,ZERO $/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x14,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x15,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x16,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x17,ZERO $/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x18,ERROR_CODE$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x19,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x1a,ERROR_CODE$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x1b,ERROR_CODE $/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x1c,ZERO$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x1d,ERROR_CODE$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x1e,ERROR_CODE$/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x1f,ZERO $/;"	l
+VECTOR	kernel/kernel.S	/^VECTOR 0x20,ZERO$/;"	l
+VIDDEO_DESC	boot/loader.S	/^	VIDDEO_DESC:	dd	0x8000_0007			;limit=0xbfff-0xb800\/4k = 0x7$/;"	d
+__KERNEL_GLOBAL_H	kernel/global.h	/^#define __KERNEL_GLOBAL_H$/;"	d
+__KERNEL_INTERRUPT_H	kernel/interrupt.h	/^#define __KERNEL_INTERRUPT_H$/;"	d
+__LIB_KERNEL_PRINT_H	lib/kernel/print.h	/^#define __LIB_KERNEL_PRINT_H$/;"	d
+__LIB_STDINT_H	lib/stdint.h	/^#define __LIB_STDINT_H$/;"	d
+_main	kernel/main.s	/^_main:                                  ## @main$/;"	l
+_read_n_disk_16	boot/mbr_func.S	/^_read_n_disk_16:$/;"	l
+_read_n_disk_32	boot/loader_func.S	/^_read_n_disk_32:$/;"	l
+ards_nr	boot/loader.S	/^	ards_nr			dw	0$/;"	d
+attribute	kernel/interrupt.c	/^	uint8_t		attribute;$/;"	m	struct:gate_desc	file:
+buf	lib/kernel/print.S	/^		buf	  	dq 0, 0$/;"	d
+count	kernel/main.c	/^int count = 0;$/;"	v
+dcount	kernel/interrupt.c	/^	uint8_t		dcount;			\/\/Fixed for Interrupt Gate$/;"	m	struct:gate_desc	file:
+enter_kernel	boot/loader.S	/^enter_kernel:$/;"	l
+extern	kernel/kernel.S	/^extern put_str$/;"	l
+f	makefile	/^	dd if=$(TARGET_KERNEL) of=$(IMAGE) bs=512 count=200 seek=9 conv=notrunc$/;"	m
+func_offset_high_word	kernel/interrupt.c	/^	uint16_t	func_offset_high_word;$/;"	m	struct:gate_desc	file:
+func_offset_low_word	kernel/interrupt.c	/^	uint16_t	func_offset_low_word;$/;"	m	struct:gate_desc	file:
+gate_desc	kernel/interrupt.c	/^struct gate_desc{$/;"	s	file:
+gdt_ptr	boot/loader.S	/^	gdt_ptr			dw	GDT_LIMIT$/;"	d
+global	boot/mbr_func.S	/^global _read_n_disk_16$/;"	l
+global	kernel/kernel.S	/^global intr_entry_table$/;"	l
+global	lib/kernel/print.S	/^global	put_char$/;"	l
+global	lib/kernel/print.S	/^global	put_int$/;"	l
+global	lib/kernel/print.S	/^global	put_str$/;"	l
+idt	kernel/interrupt.c	/^static struct gate_desc idt[IDT_DESC_CNT];$/;"	v	typeref:struct:gate_desc	file:
+idt_desc_init	kernel/interrupt.c	/^static void idt_desc_init(void){$/;"	f	file:
+idt_init	kernel/interrupt.c	/^void idt_init(void){$/;"	f
+int16_t	lib/stdint.h	/^typedef signed short int int16_t;$/;"	t
+int32_t	lib/stdint.h	/^typedef signed int int32_t;$/;"	t
+int64_t	lib/stdint.h	/^typedef signed long long int int64_t;$/;"	t
+int8_t	lib/stdint.h	/^typedef signed char int8_t;$/;"	t
+intr_entry_table	kernel/kernel.S	/^intr_entry_table:$/;"	l
+intr_handler	kernel/interrupt.h	/^typedef void* intr_handler;$/;"	t
+intr_str	kernel/kernel.S	/^	intr_str	db	'Interruption Occurd!",0x0a,0x0$/;"	d
+iret	kernel/kernel.S	/^iret$/;"	l
+kernel_init	boot/loader_func.S	/^kernel_init:$/;"	l
+loader_start	boot/loader.S	/^loader_start:$/;"	l
+main	kernel/main.c	/^int main(void)$/;"	f
+make_idt_desc	kernel/interrupt.c	/^static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler function){$/;"	f	file:
+mem_cpy	boot/loader_func.S	/^mem_cpy:$/;"	l
+mul	boot/loader_func.S	/^		mul dx$/;"	d
+mul	boot/mbr_func.S	/^		mul dx$/;"	d
+p_mode_start	boot/loader.S	/^p_mode_start:$/;"	l
+popad	lib/kernel/print.S	/^popad$/;"	l
+put_char	lib/kernel/print.S	/^put_char:$/;"	l
+put_int	lib/kernel/print.S	/^put_int:$/;"	l
+put_int_buffer	lib/kernel/print.S	/^put_int_buffer		dq    0,0     ; 定义8字节缓冲区用于数字到字符的转换$/;"	d
+put_str	lib/kernel/print.S	/^put_str:$/;"	l
+ret	boot/loader_func.S	/^ret $/;"	l
+ret	boot/loader_func.S	/^ret$/;"	l
+ret	lib/kernel/print.S	/^ret$/;"	l
+section	lib/kernel/print.S	/^section .data$/;"	l
+section	lib/kernel/print.S	/^section .text$/;"	l
+selector	kernel/interrupt.c	/^	uint16_t	selector;$/;"	m	struct:gate_desc	file:
+setup_page	boot/loader_func.S	/^setup_page:$/;"	l
+str	kernel/main.c	/^char* str = "Hallo Welt!";$/;"	v
+total_mem_bytes	boot/loader.S	/^	total_mem_bytes	dd	0$/;"	d
+uint16_t	lib/stdint.h	/^typedef unsigned short int uint16_t;$/;"	t
+uint32_t	lib/stdint.h	/^typedef unsigned int uint32_t;$/;"	t
+uint64_t	lib/stdint.h	/^typedef unsigned long long int uint64_t;$/;"	t
+uint8_t	lib/stdint.h	/^typedef unsigned char uint8_t;$/;"	t
