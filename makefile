@@ -57,6 +57,6 @@ clean:
 	do \
 		make clean -C $$dir; \
 	done
-	rm -rf *.o $(OBJ_DIR)/* $(TARGET_KERNEL)
+	rm -rf *.o *.s $(OBJ_DIR)/* $(TARGET_KERNEL)
 
 #-include $(DEPS)
