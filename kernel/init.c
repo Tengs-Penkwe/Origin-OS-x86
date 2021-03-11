@@ -5,4 +5,5 @@
 void init_all(){
 	put_str("I'm initializing\n");
 	idt_init();
+	put_str("Initialization complete\n");
 }

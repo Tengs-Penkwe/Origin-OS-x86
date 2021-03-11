@@ -229,6 +229,7 @@ kernel_init:
 ;ebx = Address of Program Header
 ;ecx = Number of Program Header		;
 ;edx = Size of Program Header		;e_phentsize
+;eax = Entry point of Program
 		
 			xor edx,edx
 			xor ecx,ecx
@@ -262,7 +263,9 @@ kernel_init:
 		add	ebx, edx						;size of PH
 
 	loop .each_segment
-
+	
+	mov eax,[KERNEL_BIN_BASE_ADDR + 0x18]
+	
 ret 
 ;------------------------------------------------------------
 

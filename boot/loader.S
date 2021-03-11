@@ -130,9 +130,8 @@ p_mode_start:
 enter_kernel:
 
 	call kernel_init
-	mov byte [gs:162],'K'
 	mov esp, KERNEL_STACK_TOP
-	jmp KERNEL_ENTRY_POINT
+	jmp eax						;KERNEL_ENTRY_POINT
 
 
 %include "loader_func.S"

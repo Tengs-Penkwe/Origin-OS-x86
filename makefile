@@ -14,10 +14,10 @@ INC_FLAGS		=	$(addprefix -I,$(INC_DIRS))
 CPPFLAGS		=	$(INC_FLAGS) -MD -MP
 
 ASM				=	nasm
-ASMFLAGS		=	-f elf
+ASMFLAGS		=	-O0 -f elf
 
 CC				=	x86_64-elf-gcc
-CFLAGS			=	-m32 -fno-builtin -z nognustack
+CFLAGS			=	-O0 -m32 -fno-builtin -z nognustack
 
 LD				=	x86_64-elf-ld
 LDFLAGS			=	-Ttext 0xc0001500 -m elf_i386 -e main  
