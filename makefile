@@ -1,7 +1,7 @@
 SOURCE_ROOT		= 	.
 #$(shell pwd)
-SOURCE_DIRS		=	$(SOURCE_ROOT)/kernel/	\
-					$(SOURCE_ROOT)/lib/
+SOURCE_DIRS		=	$(SOURCE_ROOT)/kernel	\
+					$(SOURCE_ROOT)/lib
 
 OBJ_DIR			=	$(SOURCE_ROOT)/obj/
 
@@ -11,17 +11,16 @@ DEPS			=	$(OBJS:.o=.d)
 
 INC_DIRS		=	$(shell find $(SOURCE_DIRS) -type d)
 INC_FLAGS		=	$(addprefix -I,$(INC_DIRS))
-
 CPPFLAGS		=	$(INC_FLAGS) -MD -MP
 
 ASM				=	nasm
 ASMFLAGS		=	-f elf
 
 CC				=	x86_64-elf-gcc
-CFLAGS			=	-m32 -z nognustack
+CFLAGS			=	-m32 -fno-builtin -z nognustack
 
 LD				=	x86_64-elf-ld
-LDFLAGS			=	-Ttext 0xc0001500 -m elf_i386 -e main -z stack-size=0  
+LDFLAGS			=	-Ttext 0xc0001500 -m elf_i386 -e main  
 
 TARGET_KERNEL	=	kernel.bin
 IMAGE			=	hd32Mi.img

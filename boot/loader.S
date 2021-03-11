@@ -89,11 +89,11 @@ p_mode_start:
 	mov gs,ax
 
 ;------------------------------------------------------------
-;load kernel
+;read kernel and put it to KERNEL_BIN_BASE_ADDR
 ;------------------------------------------------------------
 	mov eax, KERNEL_START_SECTOR
 	mov ebx, KERNEL_BIN_BASE_ADDR
-		mov ecx,20
+		mov ecx,200
 	call _read_n_disk_32
 
 ;------------------------------------------------------------
@@ -128,7 +128,6 @@ p_mode_start:
 	;refresh gdt(not needed)
 	jmp SELECTOR_CODE:enter_kernel
 enter_kernel:
-	mov byte [gs:160],'E'
 
 	call kernel_init
 	mov byte [gs:162],'K'
