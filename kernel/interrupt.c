@@ -1,9 +1,17 @@
 #include "interrupt.h"
 #include "stdint.h"
 #include "global.h"
+#include "io.h"
+#include "print.h"
 
 //Currently, we have 0x21 inerrupts
 #define IDT_DESC_CNT	0x21
+
+#define PIC_M_CRTL		0x20
+#define PIC_M_DATA		0x21
+#define PIC_S_CRTL		0xa0
+#define PIC_S_DATA		0xa1
+
 
 /*** Interrupt Gate***/
 struct gate_desc{
@@ -16,8 +24,28 @@ struct gate_desc{
 
 //Array of Interrupt Gate
 static struct gate_desc idt[IDT_DESC_CNT];
+/// Interruption Address and Handler Function
 extern intr_handler intr_entry_table[IDT_DESC_CNT]; 
-static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler function);
+
+/** Initialize 8259A **/
+static void pic_init(){
+	//Master
+	outb (PIC_M_CRTL,0x11);		//ICW1: Edge trigger, cascade,
+	outb (PIC_M_DATA,0x20);		//ICW2: Initial Int Number
+	outb (PIC_M_DATA,0x04);		//ICW3: IR2 links to slave
+	outb (PIC_M_DATA,0x01);		//ICW4: 8086, normal EOI
+	//Slave
+	outb (PIC_S_CRTL,0x11);
+	outb (PIC_S_DATA,0x28);
+	outb (PIC_S_DATA,0x02);
+	outb (PIC_S_DATA,0x01);
+	
+	/* open IR0 in master, only clock int is allowed */
+	outb (PIC_M_DATA,0xfe);
+	outb (PIC_S_DATA,0xff);
+	
+	put_str("	pic_init()done\n");
+}
 
 
 static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler function){
@@ -30,7 +58,7 @@ static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler 
 
 static void idt_desc_init(void){
 	for (int i=0; i < IDT_DESC_CNT; i++){
-		make_idt_desc(&idt[i], IDT_DESC_ATTR_DPL0, intr_entry_table[i])
+		make_idt_desc(&idt[i], IDT_DESC_ATTR_DPL0, intr_entry_table[i]);
 	}
 	put_str("    idt_desc_init() done.\n");
 }

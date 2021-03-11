@@ -5,7 +5,7 @@
 extern put_str
 
 SECTION .data
-	intr_str	db	'Interruption Occurd!",0x0a,0x0
+	intr_str	db	"Interruption Occurd!",0x0a,0x0
 
 global intr_entry_table
 intr_entry_table:

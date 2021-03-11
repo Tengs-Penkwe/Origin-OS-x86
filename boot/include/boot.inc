@@ -13,7 +13,7 @@ KERNEL_START_SECTOR		equ 0x9
 KERNEL_BIN_BASE_ADDR	equ	0x7_0000
 
 ; ---- ---- After Entered kernel ---- ----
-KERNEL_ENTRY_POINT		equ 0xc000_1500
+;KERNEL_ENTRY_POINT		equ 0xc000_1500
 KERNEL_STACK_TOP		equ	0x9f00		;PCB is 4K aligned
 
 ; ---- ---- Set Global Descriptor Table(GDT) ---- ----

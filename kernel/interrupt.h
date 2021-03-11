@@ -2,4 +2,6 @@
 #define __KERNEL_INTERRUPT_H
 typedef void* intr_handler;
 
+void idt_init(void);
+
 #endif	//__KERNEL_INTERRUPT_H
