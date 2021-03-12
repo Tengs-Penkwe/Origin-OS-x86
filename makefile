@@ -14,10 +14,10 @@ INC_FLAGS		=	$(addprefix -I,$(INC_DIRS))
 CPPFLAGS		=	$(INC_FLAGS) -MD -MP
 
 ASM				=	nasm
-ASMFLAGS		=	-O0 -f elf
+ASMFLAGS		=	-O0 -f elf -Wall
 
 CC				=	x86_64-elf-gcc
-CFLAGS			=	-O0 -m32 -fno-builtin -z nognustack
+CFLAGS			=	-O0 -m32 -fno-builtin -z nognustack -Wall
 
 LD				=	x86_64-elf-ld
 LDFLAGS			=	-Ttext 0xc0001500 -m elf_i386 -e main  
@@ -49,6 +49,7 @@ image: $(SOURCE_ROOT)/$(TARGET_KERNEL) boot
 disas:
 
 run: boot image
+	@ctags -R . &
 	bochs -qf $(SOURCE_ROOT)/bochsrc.mac
 
 clean:
