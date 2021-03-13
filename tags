@@ -50,7 +50,7 @@ LDFLAGS	boot/makefile	/^LDFLAGS		:=	-I include\/$/;"	m
 LDFLAGS	lib/makefile	/^LDFLAGS		:=	-I include\/$/;"	m
 LDFLAGS	makefile	/^LDFLAGS			=	-Ttext 0xc0001500 -m elf_i386 -e main  $/;"	m
 LOADER	boot/makefile	/^LOADER		:=	loader$/;"	m
-LUT	lib/kernel/print.S	/^		LUT		db "0","1","2","3","4","5","6","7" $/;"	d
+LUT	lib/kernel/print.S	/^	LUT		db "0","1","2","3","4","5","6","7" $/;"	d
 MBR	boot/makefile	/^MBR			:=	mbr$/;"	m
 OBJS	makefile	/^OBJS 			=	$(patsubst %,$(OBJ_DIR)%.o,$(SRCS))$/;"	m
 OBJ_DIR	makefile	/^OBJ_DIR			=	$(SOURCE_ROOT)\/obj\/$/;"	m
@@ -67,6 +67,7 @@ SECTION	boot/loader.S	/^SECTION loader vstart=LOADER_BASE_ADDR$/;"	l
 SECTION	boot/mbr.S	/^SECTION MBR vstart=0x7c00$/;"	l
 SECTION	kernel/kernel.S	/^SECTION .data$/;"	l
 SECTION	kernel/kernel.S	/^SECTION .text$/;"	l
+SECTION	lib/kernel/print.S	/^SECTION .data$/;"	l
 SELECTOR_CODE	boot/loader.S	/^	SELECTOR_CODE	equ	(0x0001<<3) + TI_GDT + RPL0$/;"	d
 SELECTOR_DATA	boot/loader.S	/^	SELECTOR_DATA	equ	(0x0002<<3) + TI_GDT + RPL0$/;"	d
 SELECTOR_K_CODE	kernel/global.h	/^#define SELECTOR_K_CODE	/;"	d
@@ -95,7 +96,7 @@ _read_n_disk_16	boot/mbr_func.S	/^_read_n_disk_16:$/;"	l
 _read_n_disk_32	boot/loader_func.S	/^_read_n_disk_32:$/;"	l
 ards_nr	boot/loader.S	/^	ards_nr			dw	0$/;"	d
 attribute	kernel/interrupt.c	/^	uint8_t		attribute;$/;"	m	struct:gate_desc	file:
-buf	lib/kernel/print.S	/^		buf	  	dq 0, 0$/;"	d
+buf	lib/kernel/print.S	/^	buf	  	dq 0, 0$/;"	d
 dcount	kernel/interrupt.c	/^	uint8_t		dcount;			\/\/Fixed for Interrupt Gate$/;"	m	struct:gate_desc	file:
 enter_kernel	boot/loader.S	/^enter_kernel:$/;"	l
 exception_init	kernel/interrupt.c	/^static void exception_init(void){$/;"	f	file:
@@ -110,8 +111,9 @@ global	boot/mbr_func.S	/^global _read_n_disk_16$/;"	l
 global	kernel/kernel.S	/^global intr_entry_table$/;"	l
 global	kernel/kernel.S	/^global intr_exit$/;"	l
 global	lib/kernel/print.S	/^global	put_char$/;"	l
-global	lib/kernel/print.S	/^global	put_int$/;"	l
+global	lib/kernel/print.S	/^global	put_int1$/;"	l
 global	lib/kernel/print.S	/^global	put_str$/;"	l
+global	lib/kernel/print.S	/^global put_int$/;"	l
 idt	kernel/interrupt.c	/^static struct gate_desc idt[IDT_DESC_CNT];$/;"	v	typeref:struct:gate_desc	file:
 idt_desc_init	kernel/interrupt.c	/^static void idt_desc_init(void){$/;"	f	file:
 idt_init	kernel/interrupt.c	/^void idt_init(void){$/;"	f
@@ -143,6 +145,8 @@ popad	lib/kernel/print.S	/^popad$/;"	l
 push	kernel/kernel.S	/^		push ds$/;"	d
 put_char	lib/kernel/print.S	/^put_char:$/;"	l
 put_int	lib/kernel/print.S	/^put_int:$/;"	l
+put_int1	lib/kernel/print.S	/^put_int1:$/;"	l
+put_int_buffer	lib/kernel/print.S	/^	put_int_buffer dq 0$/;"	d
 put_str	lib/kernel/print.S	/^put_str:$/;"	l
 ret	boot/loader_func.S	/^ret $/;"	l
 ret	boot/loader_func.S	/^ret$/;"	l

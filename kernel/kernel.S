@@ -39,6 +39,7 @@ SECTION .text
 		add esp,4	;jump over int number
 		popad
 		pop gs
+		pop fs
 		pop es
 		pop ds
 		add esp,4	;jump over error code
