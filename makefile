@@ -14,14 +14,18 @@ INC_DIRS		=	$(shell find $(SOURCE_DIRS) -type d)
 INC_FLAGS		=	$(addprefix -I,$(INC_DIRS))
 CPPFLAGS		=	$(INC_FLAGS) -MD -MP
 
+ENTRY_POINT		=	0xc0001500
+
 ASM				=	nasm
 ASMFLAGS		=	-O0 -f elf -Wall
 
 CC				=	x86_64-elf-gcc
-CFLAGS			=	-O0 -m32 -fno-builtin -z nognustack -Wall
+CFLAGS			=	-O0 -m32 -Wall -fno-builtin -c -W -Wstrict-prototypes \
+					-Wmissing-prototypes -nostdlib -nostartfiles
 
 LD				=	x86_64-elf-ld
-LDFLAGS			=	-Ttext 0xc0001500 -m elf_i386 -e main  
+LDFLAGS			=	-Ttext $(ENTRY_POINT) -m elf_i386 -e main \
+					-Map $(SOURCE_ROOT)/kernel.map 
 
 TARGET_KERNEL	=	kernel.bin
 IMAGE			=	hd32Mi.img
@@ -30,7 +34,7 @@ $(SOURCE_ROOT)/$(TARGET_KERNEL): $(OBJS)
 	$(LD) $(addprefix $(OBJ_DIR),$(notdir $(OBJS))) -o $@ $(LDFLAGS)
 
 $(OBJ_DIR)%.c.o: %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $(addprefix $(OBJ_DIR),$(notdir $@))
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $(addprefix $(OBJ_DIR),$(notdir $@))
 
 $(OBJ_DIR)%.S.o: %.S
 	$(ASM) $(CPPFLAGS) $(ASMFLAGS) $< -o $(addprefix $(OBJ_DIR),$(notdir $@)) 

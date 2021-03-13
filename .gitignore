@@ -5,4 +5,5 @@
 *.out
 *.img
 *.bin
+kernel.map
 tags

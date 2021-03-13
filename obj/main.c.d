@@ -1,4 +1,3 @@
-obj/main.c.o: kernel/main.c lib/kernel/print.h lib/stdint.h kernel/init.h
-lib/kernel/print.h:
-lib/stdint.h:
+obj/main.c.o: kernel/main.c kernel/init.h kernel/debug.h
 kernel/init.h:
+kernel/debug.h:
