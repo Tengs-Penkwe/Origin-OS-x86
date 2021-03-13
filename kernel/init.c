@@ -1,8 +1,8 @@
-#include "print.h"
 #include "init.h"
 #include "interrupt.h"
+#include "timer.h"
 
 void init_all(){
 	idt_init();
-	put_str("Initialization complete\n");
+	timer_init();
 }

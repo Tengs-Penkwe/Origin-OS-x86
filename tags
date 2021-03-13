@@ -20,6 +20,10 @@ CFLAGS	kernel/makefile	/^CFLAGS		:=	-m32 -z nognustack$/;"	m
 CFLAGS	lib/makefile	/^CFLAGS		:=	-m32 -z nognustack$/;"	m
 CFLAGS	makefile	/^CFLAGS			=	-O0 -m32 -fno-builtin -z nognustack -Wall$/;"	m
 CODE_DESC	boot/loader.S	/^	CODE_DESC:		dd	0x0000_FFFF$/;"	d
+CONTRER0_PORT	device/timer.c	/^#define CONTRER0_PORT	/;"	d	file:
+COUNTER0_NO	device/timer.c	/^#define COUNTER0_NO	/;"	d	file:
+COUNTER0_VALUE	device/timer.c	/^#define COUNTER0_VALUE	/;"	d	file:
+COUNTER_MODE	device/timer.c	/^#define COUNTER_MODE	/;"	d	file:
 CPPFLAGS	makefile	/^CPPFLAGS		=	$(INC_FLAGS) -MD -MP$/;"	m
 CURRENT_DIR	boot/makefile	/^CURRENT_DIR	:=	$(shell pwd)$/;"	m
 CURRENT_DIR	kernel/makefile	/^CURRENT_DIR	:=	$(shell pwd)$/;"	m
@@ -43,6 +47,8 @@ IMAGE	lib/makefile	/^IMAGE		:=	$(BUILD_ROOT)\/hd32Mi.img$/;"	m
 IMAGE	makefile	/^IMAGE			=	hd32Mi.img$/;"	m
 INC_DIRS	makefile	/^INC_DIRS		=	$(shell find $(SOURCE_DIRS) -type d)$/;"	m
 INC_FLAGS	makefile	/^INC_FLAGS		=	$(addprefix -I,$(INC_DIRS))$/;"	m
+INPUT_FREQUENCY	device/timer.c	/^#define INPUT_FREQUENCY	/;"	d	file:
+IRQ0_FREQUENCY	device/timer.c	/^#define IRQ0_FREQUENCY	/;"	d	file:
 KERNEL_MAP_BASE_ADDR	lib/kernel/print.S	/^KERNEL_MAP_BASE_ADDR			equ	0xc000_0000$/;"	d
 LBB0_1	kernel/main.s	/^LBB0_1:                                 ## =>This Inner Loop Header: Depth=1$/;"	l
 LD	makefile	/^LD				=	x86_64-elf-ld$/;"	m
@@ -58,6 +64,8 @@ PIC_M_CRTL	kernel/interrupt.c	/^#define PIC_M_CRTL	/;"	d	file:
 PIC_M_DATA	kernel/interrupt.c	/^#define PIC_M_DATA	/;"	d	file:
 PIC_S_CRTL	kernel/interrupt.c	/^#define PIC_S_CRTL	/;"	d	file:
 PIC_S_DATA	kernel/interrupt.c	/^#define PIC_S_DATA	/;"	d	file:
+PIT_CONTROL_PORT	device/timer.c	/^#define PIT_CONTROL_PORT /;"	d	file:
+READ_WRITE_LATCH	device/timer.c	/^#define READ_WRITE_LATCH /;"	d	file:
 RPL0	kernel/global.h	/^#define	 RPL0 /;"	d
 RPL0	lib/kernel/print.S	/^RPL0			equ	0$/;"	d
 RPL1	kernel/global.h	/^#define	 RPL1 /;"	d
@@ -85,6 +93,7 @@ TI_GDT	kernel/global.h	/^#define TI_GDT /;"	d
 TI_GDT	lib/kernel/print.S	/^TI_GDT			equ	0$/;"	d
 TI_LDT	kernel/global.h	/^#define TI_LDT /;"	d
 VIDDEO_DESC	boot/loader.S	/^	VIDDEO_DESC:	dd	0x8000_0007			;limit=0xbfff-0xb800\/4k = 0x7$/;"	d
+__DEVICE_TIME_H	device/timer.h	/^#define __DEVICE_TIME_H$/;"	d
 __KERNEL_GLOBAL_H	kernel/global.h	/^#define __KERNEL_GLOBAL_H$/;"	d
 __KERNEL_INIT_H	kernel/init.h	/^#define __KERNEL_INIT_H$/;"	d
 __KERNEL_INTERRUPT_H	kernel/interrupt.h	/^#define __KERNEL_INTERRUPT_H$/;"	d
@@ -102,6 +111,7 @@ enter_kernel	boot/loader.S	/^enter_kernel:$/;"	l
 exception_init	kernel/interrupt.c	/^static void exception_init(void){$/;"	f	file:
 extern	kernel/kernel.S	/^extern idt_table$/;"	l
 f	makefile	/^	dd if=$(TARGET_KERNEL) of=$(IMAGE) bs=512 count=200 seek=9 conv=notrunc$/;"	m
+frequency_set	device/timer.c	/^static void frequency_set(	uint8_t counter_port,	\\$/;"	f	file:
 func_offset_high_word	kernel/interrupt.c	/^	uint16_t	func_offset_high_word;$/;"	m	struct:gate_desc	file:
 func_offset_low_word	kernel/interrupt.c	/^	uint16_t	func_offset_low_word;$/;"	m	struct:gate_desc	file:
 gate_desc	kernel/interrupt.c	/^struct gate_desc{$/;"	s	file:
@@ -154,6 +164,7 @@ ret	lib/kernel/print.S	/^ret$/;"	l
 section	lib/kernel/print.S	/^section .text$/;"	l
 selector	kernel/interrupt.c	/^	uint16_t	selector;$/;"	m	struct:gate_desc	file:
 setup_page	boot/loader_func.S	/^setup_page:$/;"	l
+timer_init	device/timer.c	/^void timer_init(){$/;"	f
 total_mem_bytes	boot/loader.S	/^	total_mem_bytes	dd	0$/;"	d
 uint16_t	lib/stdint.h	/^typedef unsigned short int uint16_t;$/;"	t
 uint32_t	lib/stdint.h	/^typedef unsigned int uint32_t;$/;"	t

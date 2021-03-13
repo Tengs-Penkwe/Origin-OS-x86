@@ -17,7 +17,7 @@ vgaromimage: file=/opt/homebrew/share/bochs/VGABIOS-lgpl-latest
 boot: disk  #改为从硬盘启动。我们的任何代码都将直接写在硬盘上,所以不会再有读写软盘的操作。 
 
  # 第五步,设置日志文件的输出。 
-log: bochs.out  
+log:/dev/null
 
 # 第六步,开启或关闭某些功能。 
 # 下面是关闭鼠标,并打开键盘。 

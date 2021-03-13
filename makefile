@@ -1,7 +1,8 @@
 SOURCE_ROOT		= 	.
 #$(shell pwd)
 SOURCE_DIRS		=	$(SOURCE_ROOT)/kernel	\
-					$(SOURCE_ROOT)/lib
+					$(SOURCE_ROOT)/lib		\
+					$(SOURCE_ROOT)/device
 
 OBJ_DIR			=	$(SOURCE_ROOT)/obj/
 
@@ -51,6 +52,7 @@ disas:
 run: boot image
 	@ctags -R . &
 	bochs -qf $(SOURCE_ROOT)/bochsrc.mac
+	@rm -f bochs.out
 
 clean:
 	for dir in $(SOURCE_DIRS); \
