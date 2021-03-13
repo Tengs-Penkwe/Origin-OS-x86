@@ -6,6 +6,8 @@
 
 //Currently, we have 0x21 inerrupts
 #define IDT_DESC_CNT	0x21
+#define EFLAGS_IF		0x00000200		//IF = 1
+#define GET_EFLAGS(EFLAG_VAR)	asm volatile ("pushfl;popl %0":"=g"(EFLAG_VAR))
 
 #define PIC_M_CRTL		0x20
 #define PIC_M_DATA		0x21
@@ -71,7 +73,7 @@ static void exception_init(void){
 }
 
 /** Initialize 8259A **/
-static void pic_init(){
+static void pic_init(void){
 	//Master
 	outb (PIC_M_CRTL,0x11);		//ICW1: Edge trigger, cascade,
 	outb (PIC_M_DATA,0x20);		//ICW2: Initial Int Number
@@ -104,6 +106,44 @@ static void idt_desc_init(void){
 		make_idt_desc(&idt[i], IDT_DESC_ATTR_DPL0, intr_entry_table[i]);
 	}
 	put_str("    idt_desc_init() done.\n");
+}
+
+/** Enable Interrupt **/
+/// Return the old status
+enum intr_status intr_enable(){
+	enum intr_status old_status;
+	if(intr_get_status() == INTR_ON ){
+		old_status = INTR_ON;
+	}else{
+		old_status = INTR_OFF;
+		asm volatile ("sti");
+	}
+	return old_status;
+}
+
+/** Enable Interrupt **/
+/// Return the old status
+enum intr_status intr_disable(){
+	enum intr_status old_status;
+	if(intr_get_status() == INTR_ON){
+		old_status = INTR_ON;
+		asm volatile ("cli":::"memory");
+	}else{
+		old_status = INTR_OFF;
+	}
+	return old_status;
+}
+
+/** Set Intr Status **/
+enum intr_status intr_set_status (enum intr_status status){
+	return status & INTR_ON ? intr_enable() : intr_disable();
+}
+
+/** Get Intr Status **/
+enum intr_status intr_get_status (){
+	uint32_t eflags = 0;
+	GET_EFLAGS(eflags);
+	return (EFLAGS_IF & eflags) ? INTR_ON : INTR_OFF;
 }
 
 void idt_init(void){
