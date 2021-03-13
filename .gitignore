@@ -1,8 +1,8 @@
-bochs.out
 .DS_Store
 *.gch
 *.swp
 *.o
-a.out
+*.out
 *.img
 *.bin
+tags
