@@ -31,6 +31,7 @@ TARGET_KERNEL	=	kernel.bin
 IMAGE			=	hd32Mi.img
 
 $(SOURCE_ROOT)/$(TARGET_KERNEL): $(OBJS)
+	@ctags -R .
 	$(LD) $(addprefix $(OBJ_DIR),$(notdir $(OBJS))) -o $@ $(LDFLAGS)
 
 $(OBJ_DIR)%.c.o: %.c
@@ -39,10 +40,7 @@ $(OBJ_DIR)%.c.o: %.c
 $(OBJ_DIR)%.S.o: %.S
 	$(ASM) $(CPPFLAGS) $(ASMFLAGS) $< -o $(addprefix $(OBJ_DIR),$(notdir $@)) 
 
-boot:
-	make boot -C boot/
-
-.PHONY:  image disas run clean
+.PHONY:  image run clean
 
 image: $(SOURCE_ROOT)/$(TARGET_KERNEL) boot
 #	if ! [ -e hd32Mi.img ]; then \
@@ -51,10 +49,7 @@ image: $(SOURCE_ROOT)/$(TARGET_KERNEL) boot
 	make image -C boot/
 	dd if=$(TARGET_KERNEL) of=$(IMAGE) bs=512 count=200 seek=9 conv=notrunc
 
-disas:
-
 run: boot image
-	@ctags -R . &
 	bochs -qf $(SOURCE_ROOT)/bochsrc.mac
 	@rm -f bochs.out
 
