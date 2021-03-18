@@ -135,8 +135,8 @@ attribute	kernel/interrupt.c	/^	uint8_t		attribute;$/;"	m	struct:gate_desc	file:
 bitmap	lib/kernel/bitmap.h	/^struct bitmap{$/;"	s
 bitmap_init	lib/kernel/bitmap.c	/^void bitmap_init(struct bitmap* btmp){$/;"	f
 bitmap_scan	lib/kernel/bitmap.c	/^int bitmap_scan(struct bitmap* btmp, uint32_t cnt){$/;"	f
-bitmap_scan_test	lib/kernel/bitmap.c	/^bool bitmap_scan_test(struct bitmap* btmp, uint32_t bit_index){$/;"	f
-bitmap_set	lib/kernel/bitmap.c	/^void bitmap_set(struct bitmap* btmp, uint32_t bit_index, int8_t value){$/;"	f
+bitmap_scan_test	lib/kernel/bitmap.c	/^bool bitmap_scan_test(struct bitmap* btmp, uint32_t bit_idx){$/;"	f
+bitmap_set	lib/kernel/bitmap.c	/^void bitmap_set(struct bitmap* btmp, uint32_t bit_idx, int8_t value){$/;"	f
 bits	lib/kernel/bitmap.h	/^	uint8_t* bits;$/;"	m	struct:bitmap
 bool	kernel/global.h	/^#define bool /;"	d
 btmp_bytes_len	lib/kernel/bitmap.h	/^	uint32_t  btmp_bytes_len;$/;"	m	struct:bitmap
@@ -153,6 +153,7 @@ func_offset_low_word	kernel/interrupt.c	/^	uint16_t	func_offset_low_word;$/;"	m	
 gate_desc	kernel/interrupt.c	/^struct gate_desc{$/;"	s	file:
 gdt_ptr	boot/loader.S	/^	gdt_ptr			dw	GDT_LIMIT$/;"	d
 general_intr_handler	kernel/interrupt.c	/^static void general_intr_handler(uint8_t vec_nr){$/;"	f	file:
+get_kernel_pages	kernel/memory.c	/^void* get_kernel_pages(uint32_t pg_cnt){$/;"	f
 global	boot/mbr_func.S	/^global _read_n_disk_16$/;"	l
 global	kernel/kernel.S	/^global intr_entry_table$/;"	l
 global	kernel/kernel.S	/^global intr_exit$/;"	l
@@ -186,6 +187,7 @@ kernel_vaddr	kernel/memory.c	/^struct virtual_addr kernel_vaddr;$/;"	v	typeref:s
 loader_start	boot/loader.S	/^loader_start:$/;"	l
 main	kernel/main.c	/^int main(void)$/;"	f
 make_idt_desc	kernel/interrupt.c	/^static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler function){$/;"	f	file:
+malloc_page	kernel/memory.c	/^void * malloc_page (enum pool_flags pf, uint32_t pg_cnt){$/;"	f
 mem_cpy	boot/loader_func.S	/^mem_cpy:$/;"	l
 mem_init	kernel/memory.c	/^void mem_init(){$/;"	f
 mem_pool_init	kernel/memory.c	/^static void mem_pool_init(uint32_t all_mem){$/;"	f	file:
@@ -197,6 +199,7 @@ mul	boot/mbr_func.S	/^		mul dx$/;"	d
 outb	lib/kernel/io.h	/^static inline void outb(uint16_t port, uint8_t data){$/;"	f
 outsw	lib/kernel/io.h	/^static inline void outsw(uint16_t port, const void* addr, uint32_t word_cnt){$/;"	f
 p_mode_start	boot/loader.S	/^p_mode_start:$/;"	l
+page_table_add	kernel/memory.c	/^static void page_table_add(void* _vaddr, void* _page_phyaddr){$/;"	f	file:
 palloc	kernel/memory.c	/^static void* palloc(struct pool* m_pool){$/;"	f	file:
 panic_spin	kernel/debug.c	/^void panic_spin(char* filename,		\\$/;"	f
 pde_ptr	kernel/memory.c	/^uint32_t* pde_ptr(uint32_t vaddr){$/;"	f

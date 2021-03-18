@@ -14,17 +14,102 @@
 #define MEM_BITMAP_BASE		0xc009a000
 #define K_HEAP_START		0xc0100000
 
-#define PDE_IDX(addr) ((addr & 0xffc00000) >> 22)
-#define PTE_IDX(addr) ((addr & 0x003ff000) >> 12)
-
+#define PDE_IDX(addr)	((addr & 0xFFC00000) >> 22)
+#define PTE_IDX(addr)	((addr & 0x003FF000) >> 12)
 struct pool {
 	struct bitmap pool_bitmap;
 	uint32_t phy_addr_start;
 	uint32_t pool_size;
 };
-
 struct pool kernel_pool, user_pool;
 struct virtual_addr kernel_vaddr;
+
+static void page_table_add(void* _vaddr, void* _page_phyaddr);
+static void* palloc(struct pool* m_pool);
+static void* vaddr_get(enum pool_flags pf, uint32_t pg_cnt);
+static void mem_pool_init(uint32_t all_mem);
+
+/** create mapping between _vaddr and _page_phyaddr **/
+static void page_table_add(void* _vaddr, void* _page_phyaddr){
+	uint32_t vaddr = (uint32_t)_vaddr, page_phyaddr = (uint32_t)_page_phyaddr;
+	uint32_t* pde = pde_ptr(vaddr);
+	uint32_t* pte = pte_ptr(vaddr);
+
+	//verify if this page exists
+	if (*pde & 0x00000001){
+		ASSERT(!(*pte & 0x00000001));
+
+		if(! (*pte & 0x00000001)){
+			*pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+		} else {
+			PANIC("PTE repeat");
+			*pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+		}
+	} else {
+		uint32_t pde_phyaddr = (uint32_t)palloc(&kernel_pool); 	//address to store PTE, not PDE
+		*pde = (pde_phyaddr | PG_US_U | PG_RW_W | PG_P_1);		//Store PTE address in PD
+		
+		memset((void*)((int)pte & 0xfffff000), 0, PG_SIZE);
+		ASSERT(!(*pte & 0x00000001));
+		
+		*pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+	}
+}
+
+/* Allocate pg_cnt pages */
+//return virtual address
+//return NULL
+void * malloc_page (enum pool_flags pf, uint32_t pg_cnt){
+	ASSERT(pg_cnt > 0 && pg_cnt < 3840);
+
+	void* vaddr_start = vaddr_get(pf,pg_cnt);
+	if (vaddr_start == NULL){
+		return NULL;
+	}
+
+	uint32_t vaddr = (uint32_t)vaddr_start, cnt = pg_cnt;
+	struct pool* mem_pool = pf & PF_KERNEL ? &kernel_pool:&user_pool;
+
+	while(cnt-- > 0){
+		void* page_phyaddr = palloc(mem_pool);
+		if (page_phyaddr == NULL){
+			//
+			return NULL;
+		}
+		page_table_add((void*)vaddr, page_phyaddr);
+		vaddr += PG_SIZE;
+	}
+	return vaddr_start;
+}
+
+/** Apply 1 page in Kernel pool 
+ *
+ * just capsulate the malloc function, and with mem set to 0
+ *
+ * **/
+///Return virtual address
+///Return NULL
+void* get_kernel_pages(uint32_t pg_cnt){
+	void* vaddr = malloc_page(PF_KERNEL, pg_cnt);
+	if (vaddr != NULL){
+		memset(vaddr, 0, pg_cnt*PG_SIZE);
+	}
+	return vaddr;
+}
+
+/** get 1 page in m_pool **/
+///Return physical addr of page
+///Return NULL
+static void* palloc(struct pool* m_pool){
+//! atom operation needed
+	int bit_idx = -1;
+	bit_idx = bitmap_scan(&m_pool->pool_bitmap,1);
+	if (bit_idx == -1){
+		return NULL;
+	}
+	bitmap_set(&m_pool->pool_bitmap, bit_idx, 1);
+	return (void*) (m_pool->phy_addr_start + bit_idx * PG_SIZE);
+}
 
 /** find pg_cnt pages in pool that pf indicates **/
 ///return start virtual address
@@ -34,13 +119,13 @@ static void* vaddr_get(enum pool_flags pf, uint32_t pg_cnt){
 	uint32_t cnt = 0; 
 	if (pf==PF_KERNEL){
 		bit_idx_start = bitmap_scan(&kernel_vaddr.vaddr_bitmap,pg_cnt);
-		if(bit_idx_start = -1){
+		if(bit_idx_start == -1){
 			return NULL;
 		}
 		while(cnt < pg_cnt){
 			bitmap_set(&kernel_vaddr.vaddr_bitmap,bit_idx_start + cnt++,1);
 		}
-		vaddr_start = kernel_vaddr.vaddr_start + bit_idx_start * PG_SIZE;
+		vaddr_start = kernel_vaddr.vaddr_start + (bit_idx_start * PG_SIZE);
 	} else {
 		//
 	}
@@ -49,28 +134,15 @@ static void* vaddr_get(enum pool_flags pf, uint32_t pg_cnt){
 
 /** get the pte pointer correspond to vaddr **/
 uint32_t* pte_ptr(uint32_t vaddr){
-
+	uint32_t* pte = (uint32_t*)(0xffc00000 + ((vaddr & 0xffc00000) >> 10) + PTE_IDX(vaddr) * 4);
+	return pte;
 }
 
 /** get the pde pointer correspond to vaddr **/
 uint32_t* pde_ptr(uint32_t vaddr){
-
+	uint32_t* pde = (uint32_t*) (0xfffff000 + PDE_IDX(vaddr) * 4);
+	return pde;
 }
-
-/** get 1 page in m_pool **/
-///Return physical addr of page
-///Return NULL
-static void* palloc(struct pool* m_pool){
-//! atom operation needed
-	int bit_idx = bitmap_scan(&m_pool->pool_bitmap,1);
-	if (bit_idx == -1 ){
-		return NULL;
-	}
-	bitmap_set(&m_pool->pool_bitmap,bit_idx,1);
-	uint32_t page_phyaddr = ((bit_idx * PG_SIZE) + m_pool->phy_addr_start);
-	return (void*)page_phyaddr;
-}
-
 
 /** Initialize Memory Pool **/
 static void mem_pool_init(uint32_t all_mem){
