@@ -2,6 +2,7 @@ SOURCE_ROOT		= 	.
 #$(shell pwd)
 SOURCE_DIRS		=	$(SOURCE_ROOT)/kernel	\
 					$(SOURCE_ROOT)/lib		\
+					$(SOURCE_ROOT)/thread	\
 					$(SOURCE_ROOT)/device
 
 OBJ_DIR			=	$(SOURCE_ROOT)/obj/
@@ -21,7 +22,7 @@ ASMFLAGS		=	-O0 -f elf -Wall
 
 CC				=	x86_64-elf-gcc
 CFLAGS			=	-O0 -m32 -Wall -fno-builtin -c -W -Wstrict-prototypes \
-					-Wmissing-prototypes -nostdlib -nostartfiles
+					-Wmissing-prototypes -nostdlib -nostartfiles 
 
 LD				=	x86_64-elf-ld
 LDFLAGS			=	-Ttext $(ENTRY_POINT) -m elf_i386 -e main \
@@ -59,5 +60,8 @@ clean:
 		make clean -C $$dir; \
 	done
 	rm -rf *.o *.s $(OBJ_DIR)/* $(TARGET_KERNEL)
+
+doc:
+	$(shell doxygen Doxyfil)
 
 #-include $(DEPS)

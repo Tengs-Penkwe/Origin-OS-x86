@@ -6,5 +6,7 @@
 *.img
 *.bin
 *.d
+html/
+latex/
 kernel.map
 tags

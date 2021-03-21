@@ -2,6 +2,10 @@
 #define __KERNEL_GLOBAL_H
 #include "stdint.h"
 
+//--------------------
+#define PG_SIZE 4096
+
+//---------------  Selector Property ---------------
 #define	 RPL0  0
 #define	 RPL1  1
 #define	 RPL2  2
