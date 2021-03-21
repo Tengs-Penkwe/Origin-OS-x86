@@ -23,7 +23,7 @@ struct task_struct* running_thread(){
 
 /** Execute function(func_arg) by kernel_thread **/
 static void kernel_thread(thread_func* function, void* func_arg){
-	intr_enable();
+	intr_enable();			//! Need to enable interrupt for thread at first time
 	function(func_arg);
 }
 
@@ -126,12 +126,14 @@ void thread_block(enum task_status stat){
 
 void thread_unblock(struct task_struct* pthread){
 	enum intr_status old_status = intr_disable();
+
 	ASSERT((pthread->status == TASK_BLOCKED) || (pthread->status == TASK_WAITING) || (pthread->status == TASK_HANGING));
 	if (pthread->status != TASK_READY){
 		ASSERT(!elem_find(&thread_ready_list, &pthread->general_tag));
 		if(elem_find(&thread_ready_list, &pthread->general_tag)){
 			PANIC("Thread Unblock: Blocked thread un ready list\n");
 		}
+		//! put thread in the begin of ready list 
 		list_push(&thread_ready_list, &pthread->general_tag);
 		pthread->status = TASK_READY;
 	}

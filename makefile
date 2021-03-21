@@ -32,7 +32,7 @@ TARGET_KERNEL	=	kernel.bin
 IMAGE			=	hd32Mi.img
 
 $(SOURCE_ROOT)/$(TARGET_KERNEL): $(OBJS)
-	@ctags -R .
+	@ctags -R 
 	$(LD) $(addprefix $(OBJ_DIR),$(notdir $(OBJS))) -o $@ $(LDFLAGS)
 
 $(OBJ_DIR)%.c.o: %.c
