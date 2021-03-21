@@ -343,20 +343,39 @@ ret
 
 
 
+;------------------------------ set_cursor ------------------------------
+global	set_cursor
+;set place of cursor
+set_cursor:
+;----------------------------------------------------------------------
+;c_cdecl:
+;the first element in stack 
+		
+		pushad
+			mov ebx, [esp+36]
+				
+			mov ax, SELECTOR_VIDEO
+		mov gs,ax
+		
+		;------------------------------
+		;set higher 8 
+		;------------------------------
+			mov dx, 0x3d4
+			mov al, 0x0e
+		out dx,al
+			mov dx, 0x3d5
+			mov al,bh
+		out dx,al
 
+		;------------------------------
+		;set lower 8 
+		;------------------------------
+			mov dx, 0x3d4
+			mov al, 0x0f
+		out dx,al
+			mov dx, 0x3d5
+			mov al, bl
+		out dx,al
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+popad
+ret
