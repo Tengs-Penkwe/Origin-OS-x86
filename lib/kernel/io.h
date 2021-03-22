@@ -15,9 +15,10 @@ static inline void outsw(uint16_t port, const void* addr, uint32_t word_cnt){
 }
 
 /** return one byte from port **/
-static inline void inb(uint16_t port){
-	uint8_t data;
-	asm volatile ("cld; rep outswinb %w1, %b0;":"=a"(data):"Nd"(port));
+static inline uint8_t inb(uint16_t port) {
+   uint8_t data;
+   asm volatile ("inb %w1, %b0" : "=a" (data) : "Nd" (port));
+   return data;
 }
 
 /** Read word_cnt bytes from port to addr **/
