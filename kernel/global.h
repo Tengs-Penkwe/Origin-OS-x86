@@ -5,6 +5,8 @@
 //--------------------
 #define PG_SIZE 4096
 
+#define KBD_BUF_PORT	0x60
+
 //---------------  Selector Property ---------------
 #define	 RPL0  0
 #define	 RPL1  1
