@@ -1,7 +1,8 @@
 #include "init.h"
 #include "memory.h"
-#include "thread.h"
 #include "interrupt.h"
+#include "thread.h"
+#include "console.h"
 
 #include "debug.h"
 #include "print.h"
@@ -17,9 +18,7 @@ int main(void)
 
 	intr_enable();
 	while(1){
-		intr_disable();
-		put_str("Main ");
-		intr_enable();
+		console_put_str("Main ");
 	}
 	return 0;
 }
@@ -27,17 +26,13 @@ int main(void)
 void k_thread_a (void* arg){
 	char* para = arg;
 	while(1){
-		intr_disable();
-		put_str(para);
-		intr_enable();
+		console_put_str(para);
 	}
 }
 
 void k_thread_b (void* arg){
 	char* para = arg;
 	while(1){
-		intr_disable();
-		put_str(para);
-		intr_enable();
+		console_put_str(para);
 	}
 }

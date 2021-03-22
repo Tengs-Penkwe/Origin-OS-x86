@@ -78,5 +78,5 @@ uint32_t list_len(struct list* plist){
 }
 
 bool list_empty(struct list* plist){
-	return (plist->head.next == plist->tail.prev ? true:false);
+	return (plist->head.next == &plist->tail ? true:false);
 }

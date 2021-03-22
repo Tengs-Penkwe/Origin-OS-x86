@@ -1,8 +1,6 @@
 #include "sync.h"
-#include "list.h"
 #include "interrupt.h"
 
-#include "global.h"
 #include "debug.h"
 
 void sema_init(struct semaphore* psema, uint8_t value){
@@ -24,10 +22,10 @@ void sema_down (struct semaphore* psema){
 	while (psema->value == 0){			//! Hold by Others
 		//! Make Sure Current Thread is not in the waiter list
 		ASSERT(!elem_find(&psema->waiters, &running_thread()->general_tag));
-		if (!elem_find(&psema->waiters, &running_thread()->general_tag)){
+		if (elem_find(&psema->waiters, &running_thread()->general_tag)){
 			PANIC("sema_down: thread blocked has been in waiter list\n");
 		}
-		
+
 		//! If the semaphore==0, put itself into the waiter list, block itself
 		list_append(&psema->waiters, &running_thread()->general_tag);
 		thread_block(TASK_BLOCKED);
@@ -54,4 +52,29 @@ void sema_up (struct semaphore* psema){
 
 	//! Re-enable Int
 	intr_set_status(old_status);
+}
+
+void lock_acquire(struct lock* plock){
+	//In case itself has lcok but didn't release it
+	if (plock->holder != running_thread()){
+		sema_down(&plock->semaphore);
+		plock->holder = running_thread();
+		ASSERT(plock->holder_repeat_nr == 0);
+		plock->holder_repeat_nr = 1;
+	} else {
+		plock->holder_repeat_nr ++;
+	}
+}
+
+void lock_release(struct lock* plock){
+	ASSERT(plock->holder == running_thread());
+	if (plock->holder_repeat_nr > 1){
+		plock->holder_repeat_nr --;
+		return;
+	}
+	ASSERT(plock->holder_repeat_nr == 1);
+	// Must done before 
+	plock->holder = NULL;
+	plock->holder_repeat_nr = 0;
+	sema_up(&plock->semaphore);
 }

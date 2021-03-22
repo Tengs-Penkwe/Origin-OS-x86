@@ -31,8 +31,7 @@ LDFLAGS			=	-Ttext $(ENTRY_POINT) -m elf_i386 -e main \
 TARGET_KERNEL	=	kernel.bin
 IMAGE			=	hd32Mi.img
 
-$(SOURCE_ROOT)/$(TARGET_KERNEL): $(OBJS)
-	@ctags -R 
+$(SOURCE_ROOT)/$(TARGET_KERNEL): $(OBJS) tags
 	$(LD) $(addprefix $(OBJ_DIR),$(notdir $(OBJS))) -o $@ $(LDFLAGS)
 
 $(OBJ_DIR)%.c.o: %.c
@@ -41,13 +40,18 @@ $(OBJ_DIR)%.c.o: %.c
 $(OBJ_DIR)%.S.o: %.S
 	$(ASM) $(CPPFLAGS) $(ASMFLAGS) $< -o $(addprefix $(OBJ_DIR),$(notdir $@)) 
 
-.PHONY:  image run clean
+.PHONY:  boot image run clean tags doc
+
+tags:
+	@ctags -R  --exclude=html  --exclude=latex
+
+boot: 
+	make image -C boot/
 
 image: $(SOURCE_ROOT)/$(TARGET_KERNEL) boot
 #	if ! [ -e hd32Mi.img ]; then \
 		bximage -hd=32M  -mode="create" -q hd32Mi.img \
 	fi
-	make image -C boot/
 	dd if=$(TARGET_KERNEL) of=$(IMAGE) bs=512 count=200 seek=9 conv=notrunc
 
 run: boot image

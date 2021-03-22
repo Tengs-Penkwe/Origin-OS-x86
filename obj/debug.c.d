@@ -1,6 +1,6 @@
-obj/debug.c.o: kernel/debug.c kernel/debug.h kernel/interrupt.h \
- lib/stdint.h lib/kernel/print.h
+obj/debug.c.o: kernel/debug.c kernel/debug.h lib/kernel/print.h \
+ lib/stdint.h kernel/interrupt.h
 kernel/debug.h:
-kernel/interrupt.h:
-lib/stdint.h:
 lib/kernel/print.h:
+lib/stdint.h:
+kernel/interrupt.h:
