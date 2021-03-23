@@ -4,6 +4,7 @@
 #include "global.h"
 #include "interrupt.h"
 #include "io.h"
+#include "ioqueue.h"
 
 /** Escaped Character **/
 #define	esc			'\033'
@@ -101,8 +102,9 @@ static char keymap[][2] = {
 /* 0x3A */	{caps_lock_char, caps_lock_char}
 };
 
-static void intr_keyboard_handler(void){
+struct ioqueue kbd_buf;
 
+static void intr_keyboard_handler(void){
 	// Store State: If these three Modifier key is entered
 	bool ctrl_down_last = ctrl_status;
 	bool shift_down_last = shift_status;
@@ -121,7 +123,6 @@ static void intr_keyboard_handler(void){
 		scancode = (0xe000 | scancode);
 		ext_scancode = false;
 	}
-
 	break_code = ((scancode & 0x0080) != 0);	//Judge if this is a break code
 	//Only need to deal with modifiers
 	if (break_code) {
@@ -134,7 +135,6 @@ static void intr_keyboard_handler(void){
 		} else if (make_code == alt_l_make || make_code == alt_r_make) {
 			alt_status = false;
 		} /* 由于caps_lock不是弹起后关闭,所以需要单独处理 */
-
 	} else if ( (scancode > 0x00 && scancode < 0x3b)	||	\
 				(scancode == alt_r_make) 				||	\
 				(scancode == ctrl_r_make) ) {
@@ -153,14 +153,23 @@ static void intr_keyboard_handler(void){
 				shift = true;
 			}
 		} 
-
 		uint8_t index = (scancode &= 0x00ff);
 		char cur_char = keymap[index][shift];
+		/*****************  ???ctrl+l?ctrl+u??? *********************
+		 * 下面是把ctrl+l和ctrl+u这两种组合键产生的字符置为:
+		 * cur_char的asc码-字符a的asc码, 此差值比较小,
+		 * 属于asc码表中不可见的字符部分.故不会产生可见字符.
+		 * 我们在shell中将ascii值为l-a和u-a的分别处理为清屏和删除输入的快捷键*/
+		if ((ctrl_down_last && cur_char == 'l') || (ctrl_down_last && cur_char == 'u')) {
+			cur_char -= 'a';
+		}
+		/****************************************************************/
 		if (cur_char) {
-			put_char(cur_char);
+			if (!ioq_full(&kbd_buf)){
+				ioq_putchar(&kbd_buf, cur_char);
+			}
 			return;
 		}
-
 		/* 记录本次是否按下了下面几类控制键之一,供下次键入时判断组合键 */
 		if (scancode == ctrl_l_make || scancode == ctrl_r_make) {
 			ctrl_status = true;
@@ -171,15 +180,14 @@ static void intr_keyboard_handler(void){
 		} else if (scancode == caps_lock_make) {
 			caps_lock_status = !caps_lock_status;
 		}
-
 	} else {
 		put_str("unknown key\n");
 	}
-	
 }
 
 void keyboard_init(){
 	put_str("keyboard init start\n");
+	ioqueue_init(&kbd_buf);
 	register_handler(0x21, intr_keyboard_handler);
 	put_str("keyboard init done\n");
 }

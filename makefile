@@ -13,7 +13,8 @@ DEPS			=	$(OBJS:.o=.d)
 
 INC_DIRS		=	$(shell find $(SOURCE_DIRS) -type d)
 INC_FLAGS		=	$(addprefix -I,$(INC_DIRS))
-CPPFLAGS		=	$(INC_FLAGS) -MD -MP
+CPPFLAGS		=	$(INC_FLAGS)
+#-MD -MP
 
 ENTRY_POINT		=	0xc0001500
 
@@ -40,7 +41,7 @@ $(OBJ_DIR)%.c.o: %.c
 $(OBJ_DIR)%.S.o: %.S
 	$(ASM) $(CPPFLAGS) $(ASMFLAGS) $< -o $(addprefix $(OBJ_DIR),$(notdir $@)) 
 
-.PHONY:  boot image run clean tags doc
+.PHONY:  boot kernel run clean tags doc
 
 tags:
 	@ctags -R  --exclude=html  --exclude=latex
@@ -48,13 +49,13 @@ tags:
 boot: 
 	make image -C boot/
 
-image: $(SOURCE_ROOT)/$(TARGET_KERNEL) boot
+kernel: $(SOURCE_ROOT)/$(TARGET_KERNEL) boot 
 #	if ! [ -e hd32Mi.img ]; then \
 		bximage -hd=32M  -mode="create" -q hd32Mi.img \
 	fi
 	dd if=$(TARGET_KERNEL) of=$(IMAGE) bs=512 count=200 seek=9 conv=notrunc
 
-run: boot image
+run: kernel
 	bochs -qf $(SOURCE_ROOT)/bochsrc.mac
 	@rm -f bochs.out
 

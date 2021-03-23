@@ -100,9 +100,7 @@ static void pic_init(void){
 	outb (PIC_S_DATA,0x01);
 	
 	/* open IR0 in master, only clock int is allowed */
-//	outb (PIC_M_DATA,0xfe);
-//	outb (PIC_S_DATA,0xff);
-	outb (PIC_M_DATA,0xfd);
+	outb (PIC_M_DATA,0xfc);
 	outb (PIC_S_DATA,0xff);
 	
 	put_str("    pic_init()done\n");
