@@ -3,6 +3,7 @@ SOURCE_ROOT		= 	.
 SOURCE_DIRS		=	$(SOURCE_ROOT)/kernel	\
 					$(SOURCE_ROOT)/lib		\
 					$(SOURCE_ROOT)/thread	\
+					$(SOURCE_ROOT)/userprog	\
 					$(SOURCE_ROOT)/device
 
 OBJ_DIR			=	$(SOURCE_ROOT)/obj/

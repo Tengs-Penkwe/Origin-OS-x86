@@ -4,6 +4,7 @@
 #include "timer.h"
 #include "memory.h"
 #include "thread.h"
+#include "tss.h"
 #include "console.h"
 #include "keyboard.h"
 
@@ -14,4 +15,5 @@ void init_all(){
 	thread_init();
 	console_init();
 	keyboard_init();
+	tss_init();
 }
