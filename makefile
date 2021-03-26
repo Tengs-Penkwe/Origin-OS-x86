@@ -27,11 +27,14 @@ CFLAGS			=	-O0 -m32 -Wall -fno-builtin -c -W -Wstrict-prototypes \
 					-Wmissing-prototypes -nostdlib -nostartfiles 
 
 LD				=	x86_64-elf-ld
-LDFLAGS			=	-Ttext $(ENTRY_POINT) -m elf_i386 -e main \
+LDFLAGS			=	-Ttext $(ENTRY_POINT) -melf_i386 -e main \
 					-Map $(SOURCE_ROOT)/kernel.map 
 
 TARGET_KERNEL	=	kernel.bin
 IMAGE			=	hd32Mi.img
+
+all: $(SOURCE_ROOT)/$(TARGET_KERNEL)
+
 
 $(SOURCE_ROOT)/$(TARGET_KERNEL): $(OBJS) tags
 	$(LD) $(addprefix $(OBJ_DIR),$(notdir $(OBJS))) -o $@ $(LDFLAGS)
@@ -59,6 +62,9 @@ kernel: $(SOURCE_ROOT)/$(TARGET_KERNEL) boot
 run: kernel
 	bochs -qf $(SOURCE_ROOT)/bochsrc.mac
 	@rm -f bochs.out
+
+dry-run: 
+	bochs -qf $(SOURCE_ROOT)/bochsrc.mac
 
 clean:
 	for dir in $(SOURCE_DIRS); \

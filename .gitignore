@@ -6,6 +6,7 @@
 *.img
 *.bin
 *.d
+obj/
 html/
 latex/
 kernel.map
