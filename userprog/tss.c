@@ -50,6 +50,7 @@ static struct gdt_desc make_gdt_desc(uint32_t* desc_addr, uint32_t limit, uint8_
 	desc.attr_low_byte	= (uint8_t)(attr_low);
 	desc.limit_high_attr_high = (((limit & 0x000f0000) >> 16) + (uint8_t)(attr_high));
 	desc.base_high_byte	= desc_base >> 24;
+//put_int(__LINE__);
 	return desc;
 }
 
@@ -62,16 +63,17 @@ void tss_init() {
 	tss.io_base = tss_size;
 
 	/* gdt段基址为0x900,把tss放到第4个位置,也就是0x900+0x20的位置 */
-	*((struct gdt_desc*)0xc0000520) = make_gdt_desc((uint32_t*)&tss, tss_size-1, TSS_ATTR_LOW, TSS_ATTR_HIGH);
+	*((struct gdt_desc*)0xc0000523) = make_gdt_desc((uint32_t*)&tss, tss_size-1, TSS_ATTR_LOW, TSS_ATTR_HIGH);
 	/* 在gdt中添加dpl为0的TSS描述符 */
-	*((struct gdt_desc*)0xc0000528) = make_gdt_desc((uint32_t*)0, 0xfffff, GDT_CODE_ATTR_LOW_DPL3, GDT_ATTR_HIGH);
+	*((struct gdt_desc*)0xc000052b) = make_gdt_desc((uint32_t*)0, 0xfffff, GDT_CODE_ATTR_LOW_DPL3, GDT_ATTR_HIGH);
 	/* 在gdt中添加dpl为3的数据段和代码段描述符 */
-	*((struct gdt_desc*)0xc0000530) = make_gdt_desc((uint32_t*)0, 0xfffff, GDT_DATA_ATTR_LOW_DPL3, GDT_ATTR_HIGH);
+	*((struct gdt_desc*)0xc0000533) = make_gdt_desc((uint32_t*)0, 0xfffff, GDT_DATA_ATTR_LOW_DPL3, GDT_ATTR_HIGH);
 
 	/* gdt 16位的limit 32位的段基址 */
-	uint64_t gdt_operand = ((8*7-1) | ((uint64_t)(uint32_t)0xc0000500 << 16));
+	uint64_t gdt_operand = ((8*7-1) | ((uint64_t)(uint32_t)0xc0000503 << 16));
 
 	asm volatile ("lgdt %0" : : "m" (gdt_operand));
 	asm volatile ("ltr %w0" : : "r" (SELECTOR_TSS));
+put_int(__LINE__);
 	put_str("tss_init and ltr done\n");
 }
