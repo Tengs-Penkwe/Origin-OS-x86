@@ -50,7 +50,6 @@ static struct gdt_desc make_gdt_desc(uint32_t* desc_addr, uint32_t limit, uint8_
 	desc.attr_low_byte	= (uint8_t)(attr_low);
 	desc.limit_high_attr_high = (((limit & 0x000f0000) >> 16) + (uint8_t)(attr_high));
 	desc.base_high_byte	= desc_base >> 24;
-//put_int(__LINE__);
 	return desc;
 }
 
@@ -74,6 +73,5 @@ void tss_init() {
 
 	asm volatile ("lgdt %0" : : "m" (gdt_operand));
 	asm volatile ("ltr %w0" : : "r" (SELECTOR_TSS));
-put_int(__LINE__);
 	put_str("tss_init and ltr done\n");
 }
