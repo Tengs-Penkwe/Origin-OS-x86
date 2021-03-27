@@ -4,7 +4,6 @@
 
 //--------------------
 #define PG_SIZE 4096
-
 #define KBD_BUF_PORT	0x60
 
 //---------------  Selector Property ---------------
@@ -104,6 +103,11 @@ struct gdt_desc {
 *      '-----  ID……ID Flag
 *
 **********************************************************/
+#define EFLAGS_MBS	(1 << 1)		// 此项必须要设置
+#define EFLAGS_IF_1	(1 << 9)		// if为1,开中断
+#define EFLAGS_IF_0	0				// if为0,关中断
+#define EFLAGS_IOPL_3	(3 << 12)	// IOPL3,用于测试用户程序在非系统调用下进行IO
+#define EFLAGS_IOPL_0	(0 << 12)	// IOPL0
  
 //-------------------- Type Definition --------------------
 #define NULL ((void*)0)
