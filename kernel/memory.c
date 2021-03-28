@@ -1,12 +1,12 @@
 #include "memory.h"
 #include "stdint.h"
 #include "global.h"
+#include "debug.h"
+#include "print.h"
 
 #include "bitmap.h"
 #include "string.h"
-
-#include "debug.h"
-#include "print.h"
+#include "sync.h"
 
 #define PG_SIZE 4096
 //0xc009f000 is the stack top of kernel
@@ -20,7 +20,7 @@ struct pool {
 	struct bitmap pool_bitmap;
 	uint32_t phy_addr_start;
 	uint32_t pool_size;
-	uint32_t lock lock;			//! mutex when applying memory 
+	struct lock lock;			//! mutex when applying memory 
 };
 struct pool kernel_pool, user_pool;
 struct virtual_addr kernel_vaddr;	//! Only one kernel space, one kernel virtual address
@@ -185,9 +185,9 @@ void* get_a_page(enum pool_flags pf, uint32_t vaddr){
 		bitmap_set(&cur->userprog_vaddr.vaddr_bitmap, bit_idx, 1);
 	}
 	else if (cur->pgdir == NULL && pf == PF_KERNEL) {
-		bit_idx = (vaddr - cur->kernel_vaddr.vaddr_start) / PG_SIZE;
+		bit_idx = (vaddr - kernel_vaddr.vaddr_start) / PG_SIZE;
 		ASSERT (bit_idx > 0);
-		bitmap_set(kernel_vaddr.vaddr_bitmap, bit_idx, 1);
+		bitmap_set(&kernel_vaddr.vaddr_bitmap, bit_idx, 1);
 	} else {
 		PANIC("get_a_page:not allowed kernel allocing userspace or user allocing kernelspace by get_a_page");
 	}

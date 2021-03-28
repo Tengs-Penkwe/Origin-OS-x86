@@ -74,6 +74,6 @@ clean:
 	rm -rf *.o *.s $(OBJ_DIR)/* $(TARGET_KERNEL)
 
 doc:
-	$(shell doxygen Doxyfil)
+	$(shell doxygen Doxyfile)
 
 #-include $(DEPS)

@@ -5,6 +5,7 @@
 #include "string.h"
 #include "memory.h"
 #include "interrupt.h"
+#include "process.h"
 
 struct task_struct* main_thread;		//PCB of main thread
 struct list thread_ready_list;
@@ -109,6 +110,9 @@ void schedule(){
 	struct task_struct* next = elem2entry(struct task_struct,	\
 					general_tag, thread_tag);
 	next->status = TASK_RUNING;
+
+	/* Refresh Page Table */
+	process_activate(next);
 	switch_to(cur,next);
 }
 
