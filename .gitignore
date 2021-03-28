@@ -1,4 +1,7 @@
+kernel.map
+tags
 .DS_Store
+.vim
 *.gch
 *.swp
 *.o
@@ -9,5 +12,3 @@
 obj/
 html/
 latex/
-kernel.map
-tags

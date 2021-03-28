@@ -1,6 +1,11 @@
 #ifndef __THREAD_THREAD_H
 #define __THREAD_THREAD_H
 #include "list.h"
+#include "bitmap.h"
+#include "memory.h"
+
+extern struct list thread_ready_list;
+extern struct list thread_all_list;
 
 /** Generic Function Type, Often used as argument in thread function **/
 typedef void thread_func(void*);
