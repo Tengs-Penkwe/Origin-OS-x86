@@ -130,7 +130,8 @@ p_mode_start:
 enter_kernel:
 
 	call kernel_init
-	mov esp, KERNEL_STACK_TOP
+		;this mistake caused me 3 hours to debug
+		;mov esp, KERNEL_STACK_TOP
 	jmp eax						;KERNEL_ENTRY_POINT
 
 

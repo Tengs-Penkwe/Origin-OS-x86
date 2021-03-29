@@ -72,6 +72,9 @@ uint32_t* create_page_dir(void) {
 
     /************************** 1  先复制页表  *************************************/
     /*  page_dir_vaddr + 0x300*4 是内核页目录的第768项 */
+    memcpy((uint32_t*)((uint32_t)page_dir_vaddr + 0x000*4),	\
+			(uint32_t*)(0xfffff000+0x000*4),	\
+			0);
     memcpy((uint32_t*)((uint32_t)page_dir_vaddr + 0x300*4),	\
 			(uint32_t*)(0xfffff000+0x300*4),	\
 			1024);
