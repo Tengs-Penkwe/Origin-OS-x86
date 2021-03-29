@@ -5,7 +5,9 @@
 #include "print.h"
 
 //Currently, we have 0x30 inerrupts
-#define IDT_DESC_CNT	0x30
+#define IDT_DESC_CNT	0x81
+extern uint32_t syscall_handler(void);
+
 #define EFLAGS_IF		0x00000200		//IF = 1
 #define GET_EFLAGS(EFLAG_VAR)	asm volatile ("pushfl;popl %0":"=g"(EFLAG_VAR))
 
@@ -13,7 +15,6 @@
 #define PIC_M_DATA		0x21
 #define PIC_S_CRTL		0xa0
 #define PIC_S_DATA		0xa1
-
 
 /*** Interrupt Gate***/
 struct gate_desc{
@@ -46,14 +47,14 @@ static void general_intr_handler(uint8_t vec_nr){
 		cursor_pos++;
 	}
 	//Print Interrupt information
-	set_cursor(0);	put_str("!!!!!!!      excetion message begin  !!!!!!!!\n");
+	set_cursor(0);	put_str("!!!!!!!      Execution message begin  !!!!!!!!\n");
 	set_cursor(88);	put_str(intr_name[vec_nr]);
 	if (vec_nr == 14){
 		int page_fault_vaddr = 0;
 		asm ("movl %%cr2, %0;": "=r" (page_fault_vaddr));
 		put_str("\nPage Fault Address is ");put_int(page_fault_vaddr);
 	}
-	put_str("\n!!!!!!!      excetion message end    !!!!!!!!\n");
+	put_str("\n!!!!!!!      Execution message end    !!!!!!!!\n");
 	
 	while(1);
 }
@@ -119,9 +120,12 @@ static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler 
 }
 
 static void idt_desc_init(void){
-	for (int i=0; i < IDT_DESC_CNT; i++){
+	int lastindex = IDT_DESC_CNT - 1;
+	for (int i=0; i < IDT_DESC_CNT - 1 ; i++){
 		make_idt_desc(&idt[i], IDT_DESC_ATTR_DPL0, intr_entry_table[i]);
 	}
+	/* For Interrupt */
+	make_idt_desc(&idt[lastindex], IDT_DESC_ATTR_DPL3, syscall_handler);
 	put_str("    idt_desc_init() done.\n");
 }
 

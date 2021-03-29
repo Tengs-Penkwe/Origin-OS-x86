@@ -6,10 +6,12 @@
 #include "memory.h"
 #include "interrupt.h"
 #include "process.h"
+#include "sync.h"
 
 struct task_struct* main_thread;		//PCB of main thread
 struct list thread_ready_list;
 struct list thread_all_list;
+struct lock pid_lock;
 static struct list_elem* thread_tag;	//Save the thread tag in list
 
 extern void switch_to(struct task_struct* cur, struct task_struct* next);
@@ -22,6 +24,14 @@ struct task_struct* running_thread(){
 	return (struct task_struct*)(esp & 0xfffff000);
 }
 
+static pid_t allocate_pid(void){
+	static pid_t next_pid = 0;
+	lock_acquire(&pid_lock);
+	next_pid++;
+	lock_release(&pid_lock);
+	return next_pid;
+}
+
 /** Execute function(func_arg) by kernel_thread **/
 static void kernel_thread(thread_func* function, void* func_arg){
 	intr_enable();			//! Need to enable interrupt for thread at first time
@@ -31,6 +41,7 @@ static void kernel_thread(thread_func* function, void* func_arg){
 /** Initialize basic information of thread **/
 void init_thread(struct task_struct* pthread, char* name, int prio){
 	memset(pthread, 0, sizeof(*pthread));
+	pthread->pid = allocate_pid();
 	strcpy(pthread->name, name);
 	//Encapslate main as a thread
 	if (pthread == main_thread){
@@ -149,6 +160,7 @@ void thread_init(void){
 	put_str("thread_init start\n");
 	list_init(&thread_ready_list);
 	list_init(&thread_all_list);
+	lock_init(&pid_lock);
 	make_main_thread();
 	put_str("thread_init done\n");
 }

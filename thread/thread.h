@@ -70,6 +70,7 @@ struct thread_stack{
 /** PCB of process or thread **/
 struct task_struct{
 	uint32_t* self_kstack;		//Each threads in kernel use their stack
+	pid_t pid;
 	enum task_status status;
 	char name[16];
 	uint8_t priority;	
