@@ -95,9 +95,6 @@ void schedule(){
 	ASSERT(intr_get_status() == INTR_OFF);
 
 	struct task_struct* cur = running_thread();
-put_str("I'm here:");
-put_int((uint32_t)cur);
-put_char('\n');
 	if(cur->status == TASK_RUNING){
 		ASSERT(!elem_find(&thread_ready_list, &cur->general_tag));
 		list_append(&thread_ready_list, &cur->general_tag);
