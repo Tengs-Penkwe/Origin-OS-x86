@@ -104,3 +104,38 @@ SECTION .data
 	VECTOR 0x2e,ZERO			;Hard Disk
 	VECTOR 0x2f,ZERO			;RESERVED
 
+;----------------------------------------
+;System Call
+;----------------------------------------
+[bits 32]
+extern syscall_table
+global syscall_handler
+
+SECTION .text
+	syscall_handler:
+		;1.Save Environment
+		push 0		;Unify the format of stack
+
+		push ds
+		push es
+		push fs
+		push gs
+		pushad		;A->C->D->B->SP->BP->SI->DI
+
+		push 0x80
+
+		;2.Send the Parameters
+		push edx
+		push ecx
+		push ebx
+
+		;3.Call 
+		call [syscall_table + eax*4]
+		add esp,12
+
+		;4.Return Value
+		mov [esp + 8*4], eax
+		jmp intr_exit
+
+
+
