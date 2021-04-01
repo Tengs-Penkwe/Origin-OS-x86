@@ -2,7 +2,7 @@
 #define __THREAD_THREAD_H
 #include "list.h"
 #include "bitmap.h"
-#include "memory.h"
+#include "memory.h"		//DESC_CNT`
 
 extern struct list thread_ready_list;
 extern struct list thread_all_list;
@@ -82,6 +82,7 @@ struct task_struct{
 
 	uint32_t* pgdir;			//Virtual address of PD
 	struct virtual_addr userprog_vaddr;
+	struct mem_block_desc u_block_descs[DESC_CNT];
 
 	uint32_t stack_magic;
 };
