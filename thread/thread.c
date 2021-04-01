@@ -59,7 +59,7 @@ void init_thread(struct task_struct* pthread, char* name, int prio){
 
 /** Initialize thread stack, put function and arguments inti thread_stack **/
 void thread_create(struct task_struct* pthread, thread_func function, void* func_arg){
-	//stack for interruption
+	//stack for interruptin
 	pthread->self_kstack -= sizeof(struct intr_stack);
 	//stack for thread
 	pthread->self_kstack -= sizeof(struct thread_stack);

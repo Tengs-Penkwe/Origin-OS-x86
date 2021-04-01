@@ -3,10 +3,13 @@
 #include "global.h"
 #include "debug.h"
 #include "print.h"
+#include "stdio.h"
 
 #include "bitmap.h"
 #include "string.h"
 #include "sync.h"
+#include "thread.h"			//u_block_descs
+#include "interrupt.h"		//enum intr_status
 
 #define PG_SIZE 4096
 //0xc009f000 is the stack top of kernel
@@ -24,6 +27,8 @@ struct pool {
 };
 struct pool kernel_pool, user_pool;
 struct virtual_addr kernel_vaddr;	//! Only one kernel space, one kernel virtual address
+
+struct mem_block_desc k_block_descs[DESC_CNT];
 
 static void page_table_add(void* _vaddr, void* _page_phyaddr);
 static void* palloc(struct pool* m_pool);
@@ -270,9 +275,243 @@ static void mem_pool_init(uint32_t all_mem){
 	put_str("    mem_pool_init done\n");
 }
 
+void block_desc_init(struct mem_block_desc* desc_array){
+	uint16_t desc_idx, block_size = 16;
+	for (desc_idx = 0; desc_idx < DESC_CNT; desc_idx++){
+		desc_array[desc_idx].block_size = block_size;
+		/* Number of mem_blocks in arena */
+		desc_array[desc_idx].blocks_per_arena = \
+			(PG_SIZE - sizeof(struct arena)) / block_size;
+		list_init(&desc_array[desc_idx].free_list);
+		block_size *= 2;		// Next Type of Memory Block
+	}
+}
+
+//! Return the idx-th mem_block in arena
+static struct mem_block* arena2block(struct arena* a, uint32_t idx){
+	return (struct mem_block*) \
+		((uint32_t)a + sizeof(struct arena) + idx * a->desc->block_size);
+}
+
+//! Return the arena address of  mem_block b
+static struct arena* block2arena(struct mem_block* b){
+	return (struct arena*)((uint32_t)b & 0xfffff000);
+}
+
+/* 在堆中申请size字节内存 */
+void* sys_malloc(uint32_t size) {
+    enum pool_flags PF;
+    struct pool* mem_pool;
+    uint32_t pool_size;
+    struct mem_block_desc* descs;
+    struct task_struct* cur_thread = running_thread();
+
+    /* 判断用哪个内存池*/
+    if (cur_thread->pgdir == NULL) {     // 若为内核线程
+       	PF = PF_KERNEL; 
+        pool_size = kernel_pool.pool_size;
+        mem_pool = &kernel_pool;
+        descs = k_block_descs;
+    } else {				      // 用户进程pcb中的pgdir会在为其分配页表时创建
+        PF = PF_USER;
+        pool_size = user_pool.pool_size;
+        mem_pool = &user_pool;
+        descs = cur_thread->u_block_descs;
+    }
+
+    /* 若申请的内存不在内存池容量范围内则直接返回NULL */
+    if (!(size > 0 && size < pool_size)) {
+        return NULL;
+    }
+    struct arena* a;
+    struct mem_block* b;
+    lock_acquire(&mem_pool->lock);
+
+    /* 超过最大内存块1024, 就分配页框 */
+    if (size > 1024) {
+        uint32_t page_cnt = DIV_ROUND_UP(size + sizeof(struct arena), PG_SIZE);    // 向上取整需要的页框数
+		
+        a = malloc_page(PF, page_cnt);
+
+        if (a != NULL) {
+            memset(a, 0, page_cnt * PG_SIZE);	 // 将分配的内存清0
+
+            /* 对于分配的大块页框,将desc置为NULL, cnt置为页框数,large置为true */
+            a->desc = NULL;
+         	a->cnt = page_cnt;  
+            a->large = true;
+            lock_release(&mem_pool->lock);
+            return (void*)(a + 1);		 // 跨过arena大小，把剩下的内存返回
+        } else {
+			lock_release(&mem_pool->lock); 
+            return NULL;
+        }
+    } else {    // 若申请的内存小于等于1024,可在各种规格的mem_block_desc中去适配
+        uint8_t desc_idx;
+
+        /* 从内存块描述符中匹配合适的内存块规格 */
+        for (desc_idx = 0; desc_idx < DESC_CNT; desc_idx++) {
+            if (size <= descs[desc_idx].block_size) {  // 从小往大后,找到后退出
+                break;
+            }
+        }
+
+        /* 若mem_block_desc的free_list中已经没有可用的mem_block,
+         * 就创建新的arena提供mem_block */
+        if (list_empty(&(descs[desc_idx].free_list))) {
+            a = malloc_page(PF, 1);       // 分配1页框做为arena
+            if (a == NULL) {
+                lock_release(&mem_pool->lock);
+                return NULL;
+            }
+            memset(a, 0, PG_SIZE);
+
+            /* 对于分配的小块内存,将desc置为相应内存块描述符,
+             * cnt置为此arena可用的内存块数,large置为false */
+            a->desc = &descs[desc_idx];
+            a->cnt = descs[desc_idx].blocks_per_arena;
+            a->large = false;
+            uint32_t block_idx;
+
+            enum intr_status old_status = intr_disable();
+
+            /* 开始将arena拆分成内存块,并添加到内存块描述符的free_list中 */
+            for (block_idx = 0; block_idx < descs[desc_idx].blocks_per_arena; block_idx++) {
+				b = arena2block(a, block_idx); 
+                ASSERT(!elem_find(&a->desc->free_list, &b->free_elem));
+                list_append(&a->desc->free_list, &b->free_elem);
+            }
+            intr_set_status(old_status);
+        }
+
+        /* 开始分配内存块 */
+		b = elem2entry(struct mem_block, \
+				free_elem, list_pop(&descs[desc_idx].free_list));
+        memset(b, 0, descs[desc_idx].block_size);
+
+        a = block2arena(b);  // 获取内存块b所在的arena
+        a->cnt--;		   // 将此arena中的空闲内存块数减1
+        lock_release(&mem_pool->lock);
+        return (void*)b;
+    }
+}
+
+/****** Memory Free *******/
+void pfree(uint32_t page_phy_addr) {
+	struct pool* mem_pool;
+	uint32_t bit_idx = 0;
+	if (page_phy_addr >= user_pool.phy_addr_start){
+		mem_pool = &user_pool;
+		bit_idx = (page_phy_addr - user_pool.phy_addr_start) / PG_SIZE;
+	} else {
+		mem_pool = &kernel_pool;
+		bit_idx = (page_phy_addr - kernel_pool.phy_addr_start) / PG_SIZE;
+	}
+	bitmap_set(&mem_pool->pool_bitmap, bit_idx, 0);
+}
+
+static void page_table_pte_remove(uint32_t vaddr) {
+	uint32_t* pte = pte_ptr(vaddr);
+	*pte &= ~PG_P_1;
+	asm volatile ("invlpg %0"::"m"(vaddr):"memory");
+}
+
+static void vaddr_remove (enum pool_flags pf, void* _vaddr, uint32_t pg_cnt){
+	uint32_t bit_idx_start=0, vaddr=(uint32_t)_vaddr, cnt=0;
+
+	if (pf==PF_KERNEL) {
+		bit_idx_start = (vaddr - kernel_vaddr.vaddr_start) / PG_SIZE;
+		while (cnt < pg_cnt) {
+			bitmap_set(&kernel_vaddr.vaddr_bitmap, \
+					bit_idx_start+cnt++, 0); 
+		}
+	} else {
+		struct task_struct* cur = running_thread();
+		bit_idx_start = (vaddr - cur->userprog_vaddr.vaddr_start) / PG_SIZE;
+		while (cnt < pg_cnt){
+			bitmap_set(&cur->userprog_vaddr.vaddr_bitmap, \
+					bit_idx_start + cnt++, 0);
+		}
+	}
+}
+
+void mfree_page(enum pool_flags pf, void* _vaddr, uint32_t pg_cnt){
+	uint32_t vaddr = (int32_t)_vaddr, page_cnt = 0;
+	ASSERT(pg_cnt >= 1 && vaddr % PG_SIZE == 0);
+
+	uint32_t page_phy_addr = addr_v2p(vaddr);
+	ASSERT ((page_phy_addr % PG_SIZE) == 0 && page_phy_addr >= 0x102000);
+
+	if (page_phy_addr >= user_pool.phy_addr_start) {
+		vaddr -= PG_SIZE;
+		while(page_cnt < pg_cnt) {
+			vaddr += PG_SIZE;
+			page_phy_addr = addr_v2p(vaddr);
+			ASSERT((page_phy_addr % PG_SIZE) == 0 && page_phy_addr >= user_pool.phy_addr_start);
+
+			pfree(page_phy_addr);
+			page_table_pte_remove(vaddr);
+			page_cnt++;
+		}
+		vaddr_remove(pf, _vaddr, page_cnt);
+	} else {
+		vaddr -= PG_SIZE;
+		while(page_cnt < pg_cnt){
+			vaddr += PG_SIZE;
+			page_phy_addr = addr_v2p(vaddr);
+			ASSERT((page_phy_addr % PG_SIZE) == 0 && page_phy_addr >= kernel_pool.phy_addr_start && page_phy_addr < user_pool.phy_addr_start);
+			pfree(page_phy_addr);
+			page_table_pte_remove(vaddr);
+			page_cnt++;
+		}
+		vaddr_remove(pf, _vaddr, page_cnt);
+	}
+}
+
+void sys_free(void* ptr) {
+	ASSERT (ptr != NULL);
+	if (ptr!=NULL) {
+		// Decide which pool to free 
+		enum pool_flags PF;
+		struct pool* mem_pool;
+		if (running_thread()->pgdir == NULL) {
+			ASSERT((uint32_t)ptr >= K_HEAP_START);
+			PF = PF_KERNEL;
+			mem_pool = &kernel_pool;
+		} else {
+			PF = PF_USER;
+			mem_pool = &user_pool;
+		}
+
+		lock_acquire(&mem_pool->lock);
+		//
+		struct mem_block* b = ptr;
+		struct arena* a = block2arena(b);
+		ASSERT(a->large == 0 || a->large == 1);
+		if (a->desc == NULL && a->large == true) { //bigger than 1024
+			mfree_page(PF, a, a->cnt);
+		} else {						//smaller than 1024
+			list_append(&a->desc->free_list, &b->free_elem);
+
+			//judge if the mem_block inside arena are free
+			if (++a->cnt == a->desc->blocks_per_arena) {
+				for (uint32_t block_idx = 0; block_idx < a->desc->blocks_per_arena; block_idx++) {
+					struct mem_block* b = arena2block(a, block_idx);
+					ASSERT(elem_find(&a->desc->free_list, &b->free_elem));
+					list_remove (&b->free_elem);
+				}
+				mfree_page(PF, a, 1);
+			}
+		}
+		lock_release(&mem_pool->lock);
+	}
+}
+
 void mem_init(){
 	put_str("mem_init start\n");
 	uint32_t mem_bytes_total = 0x2000000; //(*(uint32_t*)(0xb00));
 	mem_pool_init(mem_bytes_total);
+	/* prepare for malloc */
+	block_desc_init(k_block_descs);
 	put_str("mem_init done\n");
 }
