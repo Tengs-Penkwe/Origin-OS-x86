@@ -335,6 +335,7 @@ void ide_init(){
 		channel_no++;
 	}
 	printk("\n   all partition info\n");
+printk("\n  partition_list: 0x%x\n",&partition_list);
 	/* 打印所有分区信息 */
 	list_traversal(&partition_list, partition_info, (int)NULL);
 	printk("ide_init done\n");
