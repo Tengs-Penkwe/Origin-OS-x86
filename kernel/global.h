@@ -118,4 +118,9 @@ struct gdt_desc {
 //-------------------- Function --------------------
 #define DIV_ROUND_UP(X, STEP) ((X + STEP - 1) / (STEP))
 
+//-------------------- Macro --------------------
+#define UNUSED __attribute__((unused))
+
+
+
 #endif

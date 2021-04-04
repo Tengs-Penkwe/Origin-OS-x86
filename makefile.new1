@@ -7,9 +7,10 @@ SOURCE_DIRS		=	$(SOURCE_ROOT)/kernel	\
 					$(SOURCE_ROOT)/device
 
 OBJ_DIR			=	$(SOURCE_ROOT)/obj/
+OBJ_DIR_NEW		=	obj
 
 SRCS			=	$(shell find $(SOURCE_DIRS) -name '*.c' -o -name '*.S')
-OBJS 			=	$(patsubst %,$(OBJ_DIR)%.o,$(SRCS))
+OBJS 			=	$(patsubst %,$(OBJ_DIR_NEW)%.o,$(addprefix /,$(notdir $(SRCS))))
 DEPS			=	$(OBJS:.o=.d)
 
 INC_DIRS		=	$(shell find $(SOURCE_DIRS) -type d)
@@ -27,7 +28,7 @@ CFLAGS			=	-O0 -m32 -Wall -fno-builtin -c -W -Wstrict-prototypes \
 					-Wmissing-prototypes -nostdlib -nostartfiles 
 
 LD				=	x86_64-elf-ld
-LDFLAGS			=	-Ttext $(ENTRY_POINT) -melf_i386 -e main \
+LDFLAGS			=	-Ttext $(ENTRY_POINT) -melf_i386 -emain \
 					-Map $(SOURCE_ROOT)/kernel.map 
 
 TARGET_KERNEL	=	kernel.bin
@@ -38,7 +39,7 @@ all: $(SOURCE_ROOT)/$(TARGET_KERNEL) tags
 $(SOURCE_ROOT)/$(TARGET_KERNEL): $(OBJS) 
 	$(LD) $(addprefix $(OBJ_DIR),$(notdir $(OBJS))) -o $@ $(LDFLAGS)
 
-$(OBJ_DIR)%.c.o: %.c
+%.c.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $(addprefix $(OBJ_DIR),$(notdir $@))
 
 $(OBJ_DIR)%.S.o: %.S
@@ -76,3 +77,4 @@ doc:
 	$(shell doxygen Doxyfile)
 
 #-include $(DEPS)
+ 
