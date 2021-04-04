@@ -80,7 +80,7 @@ static void select_disk(struct disk* hd){
 
 //! send to disk device start LBA address and sector number
 static void select_sector (struct disk* hd, uint32_t lba, uint8_t sec_cnt) {
-	ASSERT(lba < max_lba);
+	ASSERT(lba <= max_lba);
 	struct ide_channel* channel = hd->my_channel;
 	outb(reg_sect_cnt(channel), sec_cnt);
 	outb(reg_lba_l(channel), lba);
@@ -139,7 +139,7 @@ void ide_read(struct disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt) {
 	select_disk(hd);
 
 	uint32_t secs_op;		//sectors need to operate
-	uint32_t secs_done;		//sectors operated
+	uint32_t secs_done = 0;		//sectors operated
 	while(secs_done < sec_cnt){
 		if((secs_done + 256) <= sec_cnt) {
 			secs_op = 256;
@@ -173,7 +173,7 @@ void ide_write(struct disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt) {
 	select_disk(hd);
 
 	uint32_t secs_op;		//sectors need to operate
-	uint32_t secs_done;		//sectors operated
+	uint32_t secs_done = 0;		//sectors operated
 	while(secs_done < sec_cnt){
 		if((secs_done + 256) <= sec_cnt) {
 			secs_op = 256;
