@@ -30,7 +30,7 @@ struct ide_channel {
 	char name[8];
 	uint16_t port_base;		//start port number of this channel
 	uint8_t irq_no;			//interrupt number
-	bool excepting_intr;	//wait for interrupt from disk
+	bool expecting_intr;	//wait for interrupt from disk
 	struct lock lock;
 	struct semaphore disk_done;
 	struct disk device[2];	

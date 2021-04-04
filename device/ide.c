@@ -70,6 +70,67 @@ struct boot_sector {
 	uint16_t signature;
 } __attribute__((packed));
 
+static void select_disk(struct disk* hd){
+	uint8_t reg_device = BIT_DEV_MBS | BIT_DEV_LBA;
+	if (hd->dev_no == 1) {			//! Slave Disk
+		reg_device |= BIT_DEV_DEV;
+	}
+	outb(reg_dev(hd->my_channel), reg_device);
+}
+
+//! send to disk device start LBA address and sector number
+static void select_sector (struct disk* hd, uint32_t lba, uint8_t sec_cnt) {
+	ASSERT(lba < max_lba);
+	struct ide_channel* channel = hd->my_channel;
+	outb(reg_sect_cnt(channel), sec_cnt);
+	outb(reg_lba_l(channel), lba);
+	outb(reg_lba_m(channel), lba >> 8);
+	outb(reg_lba_h(channel), lba >> 16);
+	outb(reg_dev(channel), BIT_DEV_MBS | BIT_DEV_LBA | (hd->dev_no == 1 ? BIT_DEV_DEV : 0) | lba >> 24);
+}
+
+//! send to channel: command
+static void cmd_out(struct ide_channel* channel, uint8_t cmd) {
+	channel->expecting_intr = true;
+	outb(reg_cmd(channel), cmd);
+}
+
+//! Read sec_cnt sectors from disk to buf
+static void read_from_sector (struct disk* hd, void* buf, uint8_t sec_cnt) {
+	uint32_t size_in_byte;
+	if (sec_cnt == 0) {
+		size_in_byte = 256 * 512;
+	} else {
+		size_in_byte = sec_cnt * 512;
+	}
+	insw(reg_data(hd->my_channel), buf, size_in_byte/2);
+}
+
+//! Write sec_cnt sectors from buf to disk
+static void write2sector (struct disk* hd, void* buf, uint8_t sec_cnt) {
+	uint32_t size_in_byte;
+	if (sec_cnt == 0) {
+		size_in_byte = 256 * 512;
+	} else {
+		size_in_byte = sec_cnt * 512;
+	}
+	outsw(reg_data(hd->my_channel), buf, size_in_byte/2);
+}
+
+//! Wait for 30 seconds, 
+static bool busy_wait(struct disk* hd) {
+	struct ide_channel* channel = hd->my_channel;
+	uint16_t time_limit = 30 * 1000;
+	while (time_limit -=10 >= 0){
+		if (!(inb(reg_status(channel)) & BIT_STAT_BSY)) {
+			return (inb(reg_status(channel)) & BIT_STAT_DRQ);
+		} else {
+			mtime_sleep(10);
+		}
+	}
+	return false;
+}
+
 /** Read sec_cnt sectors to buf **/
 void ide_read(struct disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt) {
 	ASSERT(lba <= max_lba);		ASSERT(sec_cnt > 0);
@@ -133,71 +194,8 @@ void ide_write(struct disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt) {
 	lock_release(&hd->my_channel->lock);
 }
 
-static void select_disk(struct disk* hd){
-	uint8_t reg_device = BIT_DEV_MBS | BIT_DEV_LBA;
-	if (hd->dev_no == 1) {			//! Slave Disk
-		reg_device |= BIT_DEV_DEV;
-	}
-	outb(reg_dev(hd->my_channel), reg_device);
-}
-
-//! send to disk device start LBA address and sector number
-static void select_sector (struct disk* hd, uint32_t lba, uint8_t sec_cnt) {
-	ASSERT(lba < max_lba);
-	struct ide_channel* channel = hd->my_channel;
-	outb(reg_dev(channel), sec_cnt);
-	outb(reg_lba_l(channel), lba);
-	outb(reg_lba_m(channel), lba >> 8);
-	outb(reg_lba_h(channel), lba >> 16);
-	outb(reg_dev(channel), BIT_DEV_MBS | BIT_DEV_LBA | \
-		(hd->dev_no == 1 ? BIT_DEV_DEV : 0) | lba >> 24);
-}
-
-//! send to channel: command
-static void cmd_out(struct ide_channel* channel, uint8_t cmd) {
-	channel->excepting_intr = true;
-	outb(reg_dev(channel), cmd);
-}
-
-//! Read sec_cnt sectors from disk to buf
-static void read_from_sector (struct disk* hd, void* buf, uint8_t sec_cnt) {
-	uint32_t size_in_byte;
-	if (sec_cnt == 0) {
-		size_in_byte = 256 * 512;
-	} else {
-		size_in_byte = sec_cnt * 512;
-	}
-	insw(reg_data(hd->my_channel), buf, size_in_byte/2);
-}
-
-//! Write sec_cnt sectors from buf to disk
-static void write2sector (struct disk* hd, void* buf, uint8_t sec_cnt) {
-	uint32_t size_in_byte;
-	if (sec_cnt == 0) {
-		size_in_byte = 256 * 512;
-	} else {
-		size_in_byte = sec_cnt * 512;
-	}
-	outsw(reg_data(hd->my_channel), buf, size_in_byte/2);
-}
-
-//! Wait for 30 seconds, 
-static bool busy_wait(struct disk* hd) {
-	struct ide_channel* channel = hd->my_channel;
-	uint16_t time_limit = 30 * 1000;
-	while (time_limit -=10 > 0){
-		if (!(inb(reg_status(channel)) & BIT_STAT_BSY)) {
-			return (inb(reg_status(channel)) & BIT_STAT_DRQ);
-		} else {
-printk("waiting\n");
-			mtime_sleep(10);
-		}
-	}
-	return false;
-}
-
 //! swap len bytes and store it in buf
-static void swap_pair_bytes(const char* dst, char* buf, uint32_t len) {
+static void swap_pairs_bytes(const char* dst, char* buf, uint32_t len) {
 	uint8_t idx;
 	for (idx = 0; idx < len; idx+= 2) {
 		buf[idx + 1] = *dst++;
@@ -207,16 +205,12 @@ static void swap_pair_bytes(const char* dst, char* buf, uint32_t len) {
 }
 
 static void identify_disk(struct disk* hd) {
-	//! We only do this when initialization. so there is no need to acquire lock or set excepting_intr
+	//! We only do this when initialization. so there is no need to acquire lock or set expecting_intr
 	char id_info[512];
 	select_disk(hd);
-printk("Identifying\n");
 	cmd_out(hd->my_channel, CMD_IDENTIFY);
 	// Wait until interrupt
-printk("Identifying\n");
-intr_enable();
 	sema_down(&hd->my_channel->disk_done);
-printk("Identifying\n");
 	if (!busy_wait(hd)) {
 		char error[64];
 		sprintf(error, "%s identify failed!!!!!!\n", hd->name);
@@ -226,10 +220,10 @@ printk("Identifying\n");
 	//! byte order
 	char buf[64];
 	uint8_t sn_start = 10 * 2, sn_len = 20, md_start = 27 * 2, md_len = 40;
-	swap_pair_bytes(&id_info[sn_start], buf, sn_len);
+	swap_pairs_bytes(&id_info[sn_start], buf, sn_len);
 	printk("   disk %s info:\n      SN: %s\n", hd->name, buf);
 	memset(buf, 0, sizeof(buf));
-	swap_pair_bytes(&id_info[md_start], buf, md_len);
+	swap_pairs_bytes(&id_info[md_start], buf, md_len);
 	printk("      MODULE: %s\n", buf);
 	uint32_t sectors = *(uint32_t*)&id_info[60 * 2];
 	printk("      SECTORS: %d\n", sectors);
@@ -242,7 +236,7 @@ static void partition_scan(struct disk* hd, uint32_t ext_lba) {
 	uint8_t part_idx = 0;
 	struct partition_table_entry* p = bs->partition_table;
 
-	while (part_idx < 4) {
+	while (part_idx++ < 4) {
 		if (p->fs_type == 0x05) {
 			if (ext_lba_base != 0) {
 				partition_scan(hd, p->start_lba + ext_lba_base);
@@ -287,8 +281,8 @@ void intr_hd_handler(uint8_t irq_no) {
 	uint8_t ch_no = irq_no - 0x2e;
 	struct ide_channel* channel = &channels[ch_no];
 	ASSERT(channel->irq_no == irq_no);
-	if (channel->excepting_intr) {
-		channel->excepting_intr = false;
+	if (channel->expecting_intr) {
+		channel->expecting_intr = false;
 		sema_up(&channel->disk_done);
 		inb(reg_status(channel));
 	}
@@ -296,7 +290,7 @@ void intr_hd_handler(uint8_t irq_no) {
 
 void ide_init(){
 	printk("ide_init start\n");
-	uint8_t hd_cnt = *((uint32_t*)(0x475));
+	uint8_t hd_cnt = *((uint8_t*)(0x475));
 	printk("   ide_init hd_cnt:%d\n",hd_cnt);
 	list_init(&partition_list);
 	ASSERT(hd_cnt >0 );
@@ -319,26 +313,21 @@ void ide_init(){
 				channel->irq_no = 0x20+15;
 				break;
 		}
-		channel->excepting_intr = false;
+		channel->expecting_intr = false;
 		lock_init(&channel->lock);
 		sema_init(&channel->disk_done, 0);
 		register_handler(channel->irq_no, intr_hd_handler);
 
 		/* 分别获取两个硬盘的参数及分区信息 */
 		while (dev_no < 2) {
-printk("   dev_no:%d\n",(uint32_t)dev_no);
 			struct disk* hd = &channel->device[dev_no];
 			hd->my_channel = channel;
 			hd->dev_no = dev_no;
-printk("   dev_no:%d\n",(uint32_t)dev_no);
 			sprintf(hd->name, "sd%c", 'a' + channel_no * 2 + dev_no);
 			identify_disk(hd);	 // 获取硬盘参数
-printk("   dev_no:%d\n",(uint32_t)dev_no);
 			if (dev_no != 0) {	 // 内核本身的裸硬盘(hd60M.img)不处理
-printk("   dev_no:%d\n",(uint32_t)dev_no);
 				partition_scan(hd, 0);  // 扫描该硬盘上的分区
 			}
-printk("   dev_no:%d\n",(uint32_t)dev_no);
 			p_no = 0, l_no = 0;
 			dev_no++;
 		}
