@@ -12,6 +12,7 @@
 #include "syscall.h"
 #include "syscall-init.h"
 #include "stdio.h"
+#include "stdio-kernel.h"		//printk
 
 void k_thread_a(void*);
 void k_thread_b(void*);
@@ -22,10 +23,7 @@ int main(void) {
 	   put_str("I am kernel\n");
    init_all();
    intr_enable();
-   process_execute(u_prog_a, "u_prog_a");
-   process_execute(u_prog_b, "u_prog_b");
-   thread_start("k_thread_a", 31, k_thread_a, "I am thread_a");
-   thread_start("k_thread_b", 31, k_thread_b, "I am thread_b");
+printk("test\n");
    while(1);
    return 0;
 }

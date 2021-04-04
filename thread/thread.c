@@ -9,6 +9,7 @@
 #include "sync.h"
 
 struct task_struct* main_thread;		//PCB of main thread
+struct task_struct* idle_thread;		//PCB of idle thread
 struct list thread_ready_list;
 struct list thread_all_list;
 struct lock pid_lock;
@@ -30,6 +31,13 @@ static pid_t allocate_pid(void){
 	next_pid++;
 	lock_release(&pid_lock);
 	return next_pid;
+}
+
+static void idle(void* arg UNUSED) {
+	while(1) {
+		thread_block(TASK_BLOCKED);
+		asm volatile ("sti; hlt" : : : "memory");
+	}
 }
 
 /** Execute function(func_arg) by kernel_thread **/
@@ -114,7 +122,10 @@ void schedule(){
 	} else {
 		//
 	}
-
+	
+	if (list_empty(&thread_ready_list)) {
+		thread_unblock(idle_thread);
+	}
 	ASSERT(!list_empty(&thread_ready_list));
 	thread_tag = NULL;
 	thread_tag = list_pop(&thread_ready_list);
@@ -125,6 +136,16 @@ void schedule(){
 	/* Refresh Page Table */
 	process_activate(next);
 	switch_to(cur,next);
+}
+
+void thread_yield(void) {
+	struct task_struct *cur = running_thread();
+	enum intr_status old_status = intr_disable();
+	ASSERT(!elem_find(&thread_ready_list, &cur->general_tag));
+	list_append(&thread_ready_list, &cur->general_tag);
+	cur->status = TASK_READY;
+	schedule();
+	intr_set_status(old_status);
 }
 
 /** We use binary semaphore to solve race condition **/
@@ -162,5 +183,6 @@ void thread_init(void){
 	list_init(&thread_all_list);
 	lock_init(&pid_lock);
 	make_main_thread();
+	idle_thread = thread_start("idle", 10, idle, NULL);
 	put_str("thread_init done\n");
 }

@@ -11,7 +11,7 @@ struct semaphore {
 
 struct lock {
 	struct task_struct* holder;		//! Holder of the lock
-	struct semaphore semaphore;		//! Use binary seamphore to implement lock
+	struct semaphore semaphore;		//! Use binary semaphore to implement lock
 	uint32_t holder_repeat_nr;		//! Times that holder applies lock
 };
 
