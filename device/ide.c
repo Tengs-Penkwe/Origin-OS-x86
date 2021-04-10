@@ -320,7 +320,7 @@ void ide_init(){
 
 		/* 分别获取两个硬盘的参数及分区信息 */
 		while (dev_no < 2) {
-			struct disk* hd = &channel->device[dev_no];
+			struct disk* hd = &channel->devices[dev_no];
 			hd->my_channel = channel;
 			hd->dev_no = dev_no;
 			sprintf(hd->name, "sd%c", 'a' + channel_no * 2 + dev_no);

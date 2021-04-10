@@ -1,5 +1,6 @@
 kernel.map
 tags
+cscope.*
 .DS_Store
 .vim
 *.gch
