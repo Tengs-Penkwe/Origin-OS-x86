@@ -33,7 +33,7 @@ struct ide_channel {
 	bool expecting_intr;	//wait for interrupt from disk
 	struct lock lock;
 	struct semaphore disk_done;
-	struct disk device[2];	
+	struct disk devices[2];	
 };
 
 void ide_read(struct disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt); 
