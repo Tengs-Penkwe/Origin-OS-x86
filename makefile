@@ -66,11 +66,7 @@ dry-run:
 	bochs -qf $(SOURCE_ROOT)/bochsrc.mac
 
 clean:
-	for dir in $(SOURCE_DIRS); \
-	do \
-		make clean -C $$dir; \
-	done
-	rm -rf *.o *.s $(OBJ_DIR)/* $(TARGET_KERNEL)
+	rm -rf *.o *.s $(OBJ_DIR)/* $(TARGET_KERNEL) cscope.* latex html
 
 doc:
 	$(shell doxygen Doxyfile)

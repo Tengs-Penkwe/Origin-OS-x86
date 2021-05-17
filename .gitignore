@@ -9,6 +9,7 @@ tags
 *.img
 *.bin
 *.d
+cscope.*
 obj/
 html/
 latex/
