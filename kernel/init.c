@@ -9,6 +9,7 @@
 #include "keyboard.h"
 #include "syscall-init.h"
 #include "ide.h"
+#include "fs.h"
 
 void init_all(){
 	idt_init();
@@ -19,5 +20,7 @@ void init_all(){
 	keyboard_init();
 	tss_init();
 	syscall_init();
+		intr_enable();
 	ide_init();
+	filesys_init();
 }
